@@ -78,6 +78,6 @@ async def download_video(url: str):
     }
     downloader = yt_dlp.YoutubeDL(ydl_opts)
     videoInfo = downloader.extract_info(url)
-    return videoInfo["title"] + "[" +videoInfo["id"]+"].mp3"
+    return videoInfo["title"] + " [" +videoInfo["id"]+"].mp3"
 
 client.run(TOKEN)
