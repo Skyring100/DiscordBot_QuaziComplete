@@ -2,12 +2,19 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
-import pin_functions
+
+bot_has_pin_commands: bool = False
+try:
+    import pin_functions
+    bot_has_pin_commands = True
+except ModuleNotFoundError:
+    print("Bot not run on Raspberry Pi, skipping pin functions")
 
 #startup
 load_dotenv(".env")
 TOKEN: str = os.getenv("TOKEN")
 client = commands.Bot(command_prefix="Q.", intents=discord.Intents.all())
+
 @client.event
 async def on_ready():
     await client.tree.sync()
@@ -25,8 +32,11 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
         await interaction.channel.send(message)
 
 @client.tree.command(name="change_led", description="Changes LED on hardware")
-async def change_led(interaction: discord.Interaction, isOn: bool):
-    pin_functions.change_led(isOn)
-    await interaction.response.send_message("LED changed")
+async def change_led(interaction: discord.Interaction, is_on: bool):
+    if bot_has_pin_commands:
+        pin_functions.change_led(is_on)
+        await interaction.response.send_message("LED changed")
+    else:
+        await interaction.response.send_message("Bot currently does not have access to pin I/O")
 
 client.run(TOKEN)
