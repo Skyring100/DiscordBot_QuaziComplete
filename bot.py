@@ -53,7 +53,7 @@ async def youtube(interaction: discord.Interaction, url: str):
     #await clearYoutube()
     if voice.is_playing():
         return await interaction.response.send_message("Please wait until audio is finished")
-    video_name = await downloadVideo(url)
+    video_name = await download_video(url)
     #voice.play(FFmpegPCMAudio(video_name))
     await interaction.response.send_message("Download success")
         
@@ -66,10 +66,8 @@ async def change_led(interaction: discord.Interaction, is_on: bool):
     else:
         await interaction.response.send_message("Bot currently does not have access to pin I/O")
 
-client.run(TOKEN)
-
 #helper functions
-async def downloadVideo(url: str):
+async def download_video(url: str):
     ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
@@ -81,3 +79,5 @@ async def downloadVideo(url: str):
     downloader = yt_dlp.YoutubeDL(ydl_opts)
     downloader.download([url])
     print(downloader.extract_info(url))
+
+client.run(TOKEN)
