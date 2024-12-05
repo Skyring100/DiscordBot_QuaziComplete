@@ -53,9 +53,9 @@ async def youtube(interaction: discord.Interaction, url: str):
     #await clearYoutube()
     if voice.is_playing():
         return await interaction.response.send_message("Please wait until audio is finished")
+    await interaction.response.send_message("Downloading video")
     video_name = await download_video(url)
-    #voice.play(FFmpegPCMAudio(video_name))
-    await interaction.response.send_message("Download success")
+    voice.play(FFmpegPCMAudio(video_name))
         
 #hardware commands
 @client.tree.command(name="change_led", description="Changes LED on hardware")
@@ -79,5 +79,6 @@ async def download_video(url: str):
     downloader = yt_dlp.YoutubeDL(ydl_opts)
     downloader.download([url])
     print(downloader.extract_info(url))
+    return downloader.extract_info(url)["name"]
 
 client.run(TOKEN)
