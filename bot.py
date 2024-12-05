@@ -2,9 +2,9 @@ import discord
 from discord.ext import commands
 import dotenv
 import os
+import shutil
 import yt_dlp
 from discord import FFmpegPCMAudio
-
 
 bot_has_pin_commands: bool = False
 try:
@@ -13,7 +13,12 @@ try:
 except ModuleNotFoundError:
     print("Bot not run on Raspberry Pi, skipping pin functions")
 
-#startup
+#folder setup
+download_folder = "downloaded_audio"
+if not os.path.exists(download_folder):
+    os.makedirs(download_folder)
+
+#bot startup
 dotenv.load_dotenv(".env")
 TOKEN: str = os.getenv("TOKEN")
 client = commands.Bot(command_prefix="Q.", intents=discord.Intents.all())
@@ -54,8 +59,8 @@ async def youtube(interaction: discord.Interaction, url: str):
     if voice.is_playing():
         return await interaction.response.send_message("Please wait until audio is finished")
     await interaction.response.send_message("Downloading video")
-    video_name = await download_video(url)
-    voice.play(FFmpegPCMAudio(video_name))
+    video_path = await download_video(url)
+    voice.play(FFmpegPCMAudio(video_path))
         
 #hardware commands
 @client.tree.command(name="change_led", description="Changes LED on hardware")
@@ -77,7 +82,9 @@ async def download_video(url: str):
         }], 'noplaylist': True
     }
     downloader = yt_dlp.YoutubeDL(ydl_opts)
-    videoInfo = downloader.extract_info(url)
-    return videoInfo["title"] + " [" +videoInfo["id"]+"].mp3"
+    video_info = downloader.extract_info(url)
+    video_name = video_info["title"] + " [" +video_info["id"]+"].mp3"
+    shutil.move(video_name, download_folder)
+    return os.path.join(download_folder, video_name)
 
 client.run(TOKEN)
