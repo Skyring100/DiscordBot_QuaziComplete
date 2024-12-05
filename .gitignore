@@ -1,2 +1,3 @@
 .env
 rasppi_connect.bat
+__pycache__/
