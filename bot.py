@@ -84,7 +84,11 @@ async def download_video(url: str):
     downloader = yt_dlp.YoutubeDL(ydl_opts)
     video_info = downloader.extract_info(url)
     video_name = video_info["title"] + " [" +video_info["id"]+"].mp3"
+    video_path = os.path.join(download_folder, video_name)
+    #remove the old file if it exists
+    if os.path.exists(video_path):
+        os.remove(video_path)
     shutil.move(video_name, download_folder)
-    return os.path.join(download_folder, video_name)
+    return video_path
 
 client.run(TOKEN)
