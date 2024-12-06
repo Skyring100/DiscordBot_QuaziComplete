@@ -53,7 +53,7 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
 @client.tree.command(name="quote_of_the_day", description="Selects a quote to be quote of the day!")
 async def quote_of_the_day(interaction: discord.Interaction):
     #check if database base quote data
-    chosen_quote = db_cursor.execute("SELECT quotes.content FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)+" AND quotes.day_timestamp = DATE('now')")
+    chosen_quote = db_cursor.execute("SELECT quotes.content FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)+" AND quotes.day_timestamp = DATE('now')").fetchone()
     if not chosen_quote:
         #find the quotes channel of this guild
         quotes_channel = None
