@@ -97,6 +97,8 @@ async def download_video(url: str):
     if os.path.exists(video_path):
         os.remove(video_path)
     shutil.move(video_name, download_folder)
+
+    print(video_info)
     return video_path
 
 client.run(TOKEN)
