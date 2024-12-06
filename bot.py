@@ -97,8 +97,8 @@ async def download_video(url: str):
     print(video_info)
     #check how long the video is before downloading
     duration_data = video_info["duration_string"].split(":")
-    #limit the duration to being under an hour
-    if len(duration_data) > 2:
+    #limit the duration
+    if len(duration_data) > 2 and int(duration_data[2] > 2):
         return None
     video_name = video_info["title"] + " [" +video_info["id"]+"].mp3"
     video_path = os.path.join(download_folder, video_name)
