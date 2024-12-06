@@ -108,4 +108,9 @@ async def download_video(url: str):
         shutil.move(video_name, download_folder)
     return video_path
 
+#helper functions
+def clear_audio_folder():
+    for file in os.listdir(download_folder):
+        os.remove(file)
+
 client.run(TOKEN)
