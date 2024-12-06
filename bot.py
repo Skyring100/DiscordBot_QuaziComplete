@@ -6,6 +6,7 @@ import shutil
 import yt_dlp
 from discord import FFmpegPCMAudio
 import random
+from datetime import datetime
 import sqlite3
 #connect to the bot's database
 db_con = sqlite3.connect("discord_bot.db")
@@ -53,28 +54,39 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
 @client.tree.command(name="quote_of_the_day", description="Selects a quote to be quote of the day!")
 async def quote_of_the_day(interaction: discord.Interaction):
     #check if database base quote data
-    chosen_quote = db_cursor.execute("SELECT quotes.content FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)+" AND quotes.day_timestamp = DATE('now')").fetchone()
+    chosen_quote = db_cursor.execute("SELECT quotes.content, quotes.day_timestamp FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)).fetchone()
     if not chosen_quote:
-        #find the quotes channel of this guild
-        quotes_channel = None
-        for channel in interaction.guild.text_channels:
-            if channel.name == "quotes" or channel.name == "quote":
-                quotes_channel = channel
-        if not quotes_channel:
-            await interaction.response.send_message("No 'quotes' channel found in server!", ephemeral=True)
-        else:
-            #a quotes channel has been found, now select a random quote
-            messages = [m async for m in quotes_channel.history(limit=200)]
-            chosen_quote = random.choice(messages).content
-            #add this to the database
+        #this server has never used the 'quote of the day' command
+        chosen_quote = await choose_random_quote(interaction.guild)
+        if not chosen_quote:
+            await interaction.response.send_message("There is no 'quotes' channel with quotes in it. Make one and start adding!", ephemeral=True)
+            return
+        #add the quote for this server to the database
+        try:
+            db_cursor.execute("INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(interaction.guild_id)+", '"+chosen_quote+"', DATE('now'))")
+            db_con.commit()
+        except sqlite3.OperationalError as err:
+            print(err)
+            print(chosen_quote)
+            await interaction.response.send_message("Database error with INSERT")
+    else:
+        #check if the quote needs to updated for today
+        if chosen_quote[1] != datetime.today().strftime("%Y-%m-%d"):
+            #we need to update quote of the day
+            chosen_quote = await choose_random_quote(interaction.guild)
+            if not chosen_quote:
+                await interaction.response.send_message("There is no longer a quote in the quotes channel for this server", ephemeral=True)
+                return
+            #update with the new quote
             try:
-                db_cursor.execute("INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(interaction.guild_id)+", '"+chosen_quote+"', DATE('now'))")
+                db_cursor.execute("UPDATE quotes SET content="+chosen_quote+", day_timestamp=DATE('now') WHERE guild_id="+interaction.guild_id)
                 db_con.commit()
             except sqlite3.OperationalError as err:
                 print(err)
                 print(chosen_quote)
-    else:
-        chosen_quote = chosen_quote[0]
+                await interaction.response.send_message("Database error with UPDATE")
+        else:
+            chosen_quote = chosen_quote[0]
     await interaction.response.send_message(chosen_quote)
 
 #audio commands
@@ -152,5 +164,21 @@ async def download_video(url: str):
 def clear_audio_folder():
     for file in os.listdir(download_folder):
         os.remove(file)
+
+async def choose_random_quote(guild: discord.guild):
+    #find the quotes channel of this guild
+    quotes_channel = None
+    for channel in guild.text_channels:
+        if channel.name == "quotes" or channel.name == "quote":
+            quotes_channel = channel
+    if not quotes_channel:
+        return None
+    else:
+        #quotes channel has been found, now select a random quote
+        messages = [m async for m in quotes_channel.history(limit=200)]
+        if len(messages) == 0:
+            return None
+        chosen_quote = random.choice(messages).content
+        return chosen_quote
 
 client.run(TOKEN)
