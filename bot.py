@@ -94,7 +94,7 @@ async def download_video(url: str):
     }
     downloader = yt_dlp.YoutubeDL(ydl_opts)
     video_info = downloader.extract_info(url, download=False)
-    print(video_info+"\n")
+    print(video_info)
     #check how long the video is before downloading
     duration_data = video_info["duration_string"].split(":")
     #limit the duration to being under an hour
