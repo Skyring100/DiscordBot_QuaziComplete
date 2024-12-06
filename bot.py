@@ -50,10 +50,18 @@ async def vc_with_me(interaction: discord.Interaction):
     await interaction.response.send_message("Joining voice channel", ephemeral=True)
     return await interaction.user.voice.channel.connect()
 
+@client.tree.command(name="leave_vc", description="Bot will leave the vc it is currently in")
+async def leave_vc(interaction: discord.Interaction):
+    if interaction.guild.voice_client:
+        await interaction.guild.voice_client.disconnect()
+        await interaction.response.send_message("Voice channel disconnected", ephemeral=True)
+    else:
+        await interaction.response.send_message("Bot is not in a voice channel", ephemeral=True)
+
 @client.tree.command(name="youtube", description="Play YouTube audio")
 async def youtube(interaction: discord.Interaction, url: str):
     voice = interaction.guild.voice_client
-    if voice == None:
+    if not voice:
         return await interaction.response.send_message("Bot needs to be in a voice channel for this")
     #await clearYoutube()
     if voice.is_playing():
