@@ -15,7 +15,7 @@ db_cursor = db_con.cursor()
 try:
     db_cursor.execute("SELECT * FROM quotes")
 except sqlite3.OperationalError:
-    db_cursor.execute("CREATE TABLE quote(guild_id, content, day_timestamp)")
+    db_cursor.execute("CREATE TABLE quotes(guild_id, content, day_timestamp)")
 
 bot_has_pin_commands: bool = False
 try:
