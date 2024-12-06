@@ -62,15 +62,15 @@ async def leave_vc(interaction: discord.Interaction):
 async def youtube(interaction: discord.Interaction, url: str):
     voice = interaction.guild.voice_client
     if not voice:
-        return await interaction.response.send_message("Bot needs to be in a voice channel for this")
+        return await interaction.response.send_message("Bot needs to be in a voice channel for this", ephemeral=True)
     if voice.is_playing():
-        return await interaction.response.send_message("Please wait until audio is finished")
+        return await interaction.response.send_message("Please wait until audio is finished", ephemeral=True)
     await interaction.response.defer()
     video_path = await download_video(url)
     if not video_path:
         await interaction.followup.send("Audio is too long to download", ephemeral=True)
     else:
-        await interaction.followup.send("Audio read", ephemeral=True)
+        await interaction.followup.send("Audio is ready!", ephemeral=True)
         voice.play(FFmpegPCMAudio(video_path))
         
 #hardware commands
@@ -94,7 +94,7 @@ async def download_video(url: str):
     }
     downloader = yt_dlp.YoutubeDL(ydl_opts)
     video_info = downloader.extract_info(url, download=False)
-    print(video_info)
+    print(video_info+"\n")
     #check how long the video is before downloading
     duration_data = video_info["duration_string"].split(":")
     #limit the duration to being under an hour
