@@ -69,7 +69,7 @@ async def quote_of_the_day(interaction: discord.Interaction):
             #add this to the database
             db_cursor.execute("INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(interaction.guild_id)+", '"+chosen_quote+"', DATE('now')")
             db_con.commit()
-        await interaction.response.send_message(chosen_quote.content)
+    await interaction.response.send_message(chosen_quote.content)
 
 #audio commands
 @client.tree.command(name="join_vc", description="Bot will join a voice channel")
