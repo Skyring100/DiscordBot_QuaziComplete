@@ -65,7 +65,7 @@ async def youtube(interaction: discord.Interaction, url: str):
         return await interaction.response.send_message("Bot needs to be in a voice channel for this", ephemeral=True)
     if voice.is_playing():
         return await interaction.response.send_message("Please wait until audio is finished", ephemeral=True)
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral=True)
     video_path = await download_video(url)
     if not video_path:
         await interaction.followup.send("Audio is too long to download", ephemeral=True)
@@ -98,7 +98,7 @@ async def download_video(url: str):
     #check how long the video is before downloading
     duration_data = video_info["duration_string"].split(":")
     #limit the duration
-    if len(duration_data) > 2 and int(duration_data[2]) < 3:
+    if len(duration_data) > 2 and int(duration_data[2]) < 2:
         return None
     video_name = video_info["title"] + " [" +video_info["id"]+"].mp3"
     video_path = os.path.join(download_folder, video_name)
