@@ -49,7 +49,7 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
 @client.tree.command(name="quote_of_the_day", description="Selects a quote to be quote of the day!")
 async def quote_of_the_day(interaction: discord.Interaction):
     #check if database base quote data
-    chosen_quote = db_cursor.execute("SELECT quotes.content FROM quotes WHERE quotes.guild_id="+interaction.guild_id+" AND quotes.day_timestamp = DATE('now')")
+    chosen_quote = db_cursor.execute("SELECT quotes.content FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)+" AND quotes.day_timestamp = DATE('now')")
     if not chosen_quote:
         #find the quotes channel of this guild
         quotes_channel = None
@@ -63,7 +63,7 @@ async def quote_of_the_day(interaction: discord.Interaction):
             messages = [m async for m in quotes_channel.history(limit=200)]
             chosen_quote = random.choice(messages)
             #add this to the database
-            db_cursor.execute("INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+interaction.guild_id+", '"+chosen_quote+"', DATE('now')")
+            db_cursor.execute("INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(interaction.guild_id)+", '"+chosen_quote+"', DATE('now')")
         await interaction.response.send_message(chosen_quote.content)
 
 #audio commands
