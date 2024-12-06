@@ -17,6 +17,7 @@ except ModuleNotFoundError:
 download_folder = "downloaded_audio"
 if not os.path.exists(download_folder):
     os.makedirs(download_folder)
+max_audio_duration = "7:00"
 
 #bot startup
 dotenv.load_dotenv(".env")
@@ -63,12 +64,15 @@ async def youtube(interaction: discord.Interaction, url: str):
     voice = interaction.guild.voice_client
     if not voice:
         return await interaction.response.send_message("Bot needs to be in a voice channel for this")
-    #await clearYoutube()
     if voice.is_playing():
         return await interaction.response.send_message("Please wait until audio is finished")
-    await interaction.response.send_message("Downloading video")
+    await interaction.response.defer()
     video_path = await download_video(url)
-    voice.play(FFmpegPCMAudio(video_path))
+    if not video_path:
+        await interaction.response.send_message("Audio is too long to download", ephemeral=True)
+    else:
+        await interaction.response.send_message("Audio read", ephemeral=True)
+        voice.play(FFmpegPCMAudio(video_path))
         
 #hardware commands
 @client.tree.command(name="change_led", description="Changes LED on hardware")
@@ -90,15 +94,17 @@ async def download_video(url: str):
         }], 'noplaylist': True
     }
     downloader = yt_dlp.YoutubeDL(ydl_opts)
-    video_info = downloader.extract_info(url)
+    video_info = downloader.extract_info(url, download=False)
+    print(video_info)
+    #check how long the video is before downloading
+    if video_info["duration_string"] > max_audio_duration:
+        return None
     video_name = video_info["title"] + " [" +video_info["id"]+"].mp3"
     video_path = os.path.join(download_folder, video_name)
-    #remove the old file if it exists
-    if os.path.exists(video_path):
-        os.remove(video_path)
-    shutil.move(video_name, download_folder)
-
-    print(video_info)
+    #Check if video is not already downloaded
+    if not os.path.exists(video_path):
+        downloader.download([url])
+        shutil.move(video_name, download_folder)
     return video_path
 
 client.run(TOKEN)
