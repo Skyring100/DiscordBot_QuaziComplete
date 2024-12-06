@@ -53,13 +53,14 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
 
 @client.tree.command(name="quote_of_the_day", description="Selects a quote to be quote of the day!")
 async def quote_of_the_day(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
     #check if database base quote data
     chosen_quote = db_cursor.execute("SELECT quotes.content, quotes.day_timestamp FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)).fetchone()
     if not chosen_quote:
         #this server has never used the 'quote of the day' command
         chosen_quote = await choose_random_quote(interaction.guild)
         if not chosen_quote:
-            await interaction.response.send_message("There is no 'quotes' channel with quotes in it. Make one and start adding!", ephemeral=True)
+            await interaction.followup.send("There is no 'quotes' channel with quotes in it. Make one and start adding!", ephemeral=True)
             return
         #add the quote for this server to the database
         try:
@@ -68,14 +69,14 @@ async def quote_of_the_day(interaction: discord.Interaction):
         except sqlite3.OperationalError as err:
             print(err)
             print(chosen_quote)
-            await interaction.response.send_message("Database error with INSERT")
+            await interaction.followup.send("Database error with INSERT")
     else:
         #check if the quote needs to updated for today
         if chosen_quote[1] != datetime.today().strftime("%Y-%m-%d"):
             #we need to update quote of the day
             chosen_quote = await choose_random_quote(interaction.guild)
             if not chosen_quote:
-                await interaction.response.send_message("There is no longer a quote in the quotes channel for this server", ephemeral=True)
+                await interaction.followup.send("There is no longer a quote in the quotes channel for this server", ephemeral=True)
                 return
             #update with the new quote
             try:
@@ -84,10 +85,10 @@ async def quote_of_the_day(interaction: discord.Interaction):
             except sqlite3.OperationalError as err:
                 print(err)
                 print(chosen_quote)
-                await interaction.response.send_message("Database error with UPDATE")
+                await interaction.followup.send("Database error with UPDATE")
         else:
             chosen_quote = chosen_quote[0]
-    await interaction.response.send_message(chosen_quote)
+    await interaction.followup.send(chosen_quote)
 
 #audio commands
 @client.tree.command(name="join_vc", description="Bot will join a voice channel")
