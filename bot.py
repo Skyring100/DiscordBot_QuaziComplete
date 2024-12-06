@@ -65,11 +65,11 @@ async def quote_of_the_day(interaction: discord.Interaction):
         else:
             #a quotes channel has been found, now select a random quote
             messages = [m async for m in quotes_channel.history(limit=200)]
-            chosen_quote = random.choice(messages)
+            chosen_quote = random.choice(messages).content
             #add this to the database
             db_cursor.execute("INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(interaction.guild_id)+", '"+chosen_quote+"', DATE('now')")
             db_con.commit()
-    await interaction.response.send_message(chosen_quote.content)
+    await interaction.response.send_message(chosen_quote)
 
 #audio commands
 @client.tree.command(name="join_vc", description="Bot will join a voice channel")
