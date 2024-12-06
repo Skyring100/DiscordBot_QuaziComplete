@@ -69,9 +69,9 @@ async def youtube(interaction: discord.Interaction, url: str):
     await interaction.response.defer()
     video_path = await download_video(url)
     if not video_path:
-        await interaction.response.send_message("Audio is too long to download", ephemeral=True)
+        await interaction.followup.send("Audio is too long to download", ephemeral=True)
     else:
-        await interaction.response.send_message("Audio read", ephemeral=True)
+        await interaction.followup.send("Audio read", ephemeral=True)
         voice.play(FFmpegPCMAudio(video_path))
         
 #hardware commands
