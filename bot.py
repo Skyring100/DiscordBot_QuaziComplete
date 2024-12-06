@@ -6,6 +6,12 @@ import shutil
 import yt_dlp
 from discord import FFmpegPCMAudio
 import random
+import sqlite3
+#connect to the bot's database
+db_con = sqlite3.connect("discord_bot.db")
+#setup cursor needed for queries
+db_cursor = db_con.cursor()
+
 
 bot_has_pin_commands: bool = False
 try:
@@ -42,16 +48,22 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
 
 @client.tree.command(name="quote_of_the_day", description="Selects a quote to be quote of the day!")
 async def quote_of_the_day(interaction: discord.Interaction):
-    #find the quotes channel of this guild
-    quotes_channel = None
-    for channel in interaction.guild.text_channels:
-        if channel.name == "quotes" or channel.name == "quote":
-            quotes_channel = channel
-    if not quotes_channel:
-        await interaction.response.send_message("No 'quotes' channel found in server!", ephemeral=True)
-    else:
-        messages = [m async for m in quotes_channel.history(limit=200)]
-        chosen_quote = random.choice(messages)
+    #check if database base quote data
+    chosen_quote = db_cursor.execute("SELECT quotes.content FROM quotes WHERE quotes.guild_id="+interaction.guild_id+" AND quotes.day_timestamp = DATE('now')")
+    if not chosen_quote:
+        #find the quotes channel of this guild
+        quotes_channel = None
+        for channel in interaction.guild.text_channels:
+            if channel.name == "quotes" or channel.name == "quote":
+                quotes_channel = channel
+        if not quotes_channel:
+            await interaction.response.send_message("No 'quotes' channel found in server!", ephemeral=True)
+        else:
+            #a quotes channel has been found, now select a random quote
+            messages = [m async for m in quotes_channel.history(limit=200)]
+            chosen_quote = random.choice(messages)
+            #add this to the database
+            db_cursor.execute("INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+interaction.guild_id+", '"+chosen_quote+"', DATE('now')")
         await interaction.response.send_message(chosen_quote.content)
 
 #audio commands
