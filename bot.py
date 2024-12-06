@@ -11,7 +11,11 @@ import sqlite3
 db_con = sqlite3.connect("discord_bot.db")
 #setup cursor needed for queries
 db_cursor = db_con.cursor()
-
+#create tables if they do not exist
+try:
+    db_cursor.execute("SELECT * FROM quotes")
+except sqlite3.OperationalError:
+    db_cursor.execute("CREATE TABLE quote(guild_id, content, day_timestamp)")
 
 bot_has_pin_commands: bool = False
 try:
@@ -64,6 +68,7 @@ async def quote_of_the_day(interaction: discord.Interaction):
             chosen_quote = random.choice(messages)
             #add this to the database
             db_cursor.execute("INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(interaction.guild_id)+", '"+chosen_quote+"', DATE('now')")
+            db_con.commit()
         await interaction.response.send_message(chosen_quote.content)
 
 #audio commands
