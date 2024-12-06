@@ -5,6 +5,7 @@ import os
 import shutil
 import yt_dlp
 from discord import FFmpegPCMAudio
+import random
 
 bot_has_pin_commands: bool = False
 try:
@@ -28,7 +29,7 @@ async def on_ready():
     await client.tree.sync()
     print("Quazi Clone online")
 
-#commands
+#general commands
 @client.tree.command(name="hello_world", description="Say hello to my little friend!")
 async def hello_world(interaction: discord.Interaction):
     await interaction.response.send_message("Hello World!")
@@ -39,9 +40,25 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
     for i in range(amount):
         await interaction.channel.send(message)
 
+@client.tree.command(name="quote_of_the_day", description="Selects a quote to be quote of the day!")
+async def quote_of_the_day(interaction: discord.Interaction):
+    #find the quotes channel of this guild
+    quotes_channel = None
+    for channel in interaction.guild.text_channels:
+        if channel.name == "quotes" or channel.name == "quote":
+            quotes_channel = channel
+    if not quotes_channel:
+        await interaction.response.send_message("No 'quotes' channel found in server!", ephemeral=True)
+    else:
+        messages = [m async for m in quotes_channel.history(limit=200)]
+        chosen_quote = random.choice(messages)
+        await interaction.response.send_message(chosen_quote.content)
+
 #audio commands
 @client.tree.command(name="join_vc", description="Bot will join a voice channel")
 async def join_vc(interaction: discord.Interaction, voice_channel: discord.VoiceChannel):
+    if interaction.guild.voice_client:
+        await interaction.guild.voice_client.disconnect()
     await interaction.response.send_message("Joining voice channel", ephemeral=True)
     return await voice_channel.connect()
     
@@ -72,7 +89,7 @@ async def youtube(interaction: discord.Interaction, url: str):
     else:
         await interaction.followup.send("Audio is ready!", ephemeral=True)
         voice.play(FFmpegPCMAudio(video_path))
-        
+
 #hardware commands
 @client.tree.command(name="change_led", description="Changes LED on hardware")
 async def change_led(interaction: discord.Interaction, is_on: bool):
@@ -80,7 +97,7 @@ async def change_led(interaction: discord.Interaction, is_on: bool):
         pin_functions.change_led(is_on)
         await interaction.response.send_message("LED changed", ephemeral=True)
     else:
-        await interaction.response.send_message("Bot currently does not have access to pin I/O")
+        await interaction.response.send_message("Bot currently does not have access to pin I/O", ephemeral=True)
 
 #helper functions
 async def download_video(url: str):
