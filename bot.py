@@ -54,6 +54,7 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
 async def quote_of_the_day(interaction: discord.Interaction):
     #check if database base quote data
     chosen_quote = db_cursor.execute("SELECT quotes.content FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)+" AND quotes.day_timestamp = DATE('now')").fetchone()
+    chosen_quote = chosen_quote[0]
     if not chosen_quote:
         #find the quotes channel of this guild
         quotes_channel = None
