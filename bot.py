@@ -17,7 +17,6 @@ except ModuleNotFoundError:
 download_folder = "downloaded_audio"
 if not os.path.exists(download_folder):
     os.makedirs(download_folder)
-max_audio_duration = "7:00"
 
 #bot startup
 dotenv.load_dotenv(".env")
@@ -97,7 +96,9 @@ async def download_video(url: str):
     video_info = downloader.extract_info(url, download=False)
     print(video_info)
     #check how long the video is before downloading
-    if video_info["duration_string"] > max_audio_duration:
+    duration_data = video_info["duration_string"].split(":")
+    #limit the duration to being under an hour
+    if len(duration_data) > 2:
         return None
     video_name = video_info["title"] + " [" +video_info["id"]+"].mp3"
     video_path = os.path.join(download_folder, video_name)
