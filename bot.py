@@ -80,7 +80,7 @@ async def quote_of_the_day(interaction: discord.Interaction):
                 return
             #update with the new quote
             try:
-                db_cursor.execute("UPDATE quotes SET content="+chosen_quote+", day_timestamp=DATE('now') WHERE guild_id="+interaction.guild_id)
+                db_cursor.execute("UPDATE quotes SET content="+chosen_quote+", day_timestamp=DATE('now') WHERE guild_id="+str(interaction.guild_id))
                 db_con.commit()
             except sqlite3.OperationalError as err:
                 print(err)
