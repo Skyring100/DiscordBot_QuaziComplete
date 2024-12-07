@@ -70,13 +70,14 @@ async def quote_of_the_day(interaction: discord.Interaction):
             print(err)
             print(chosen_quote)
             await interaction.followup.send("Database error with INSERT")
+            return
     else:
         #check if the quote needs to updated for today
-        if chosen_quote[1] != datetime.today().strftime("%Y-%m-%d"):
+        if True:#chosen_quote[1] != datetime.today().strftime("%Y-%m-%d"):
             #we need to update quote of the day
             chosen_quote = await choose_random_quote(interaction.guild)
             if not chosen_quote:
-                await interaction.followup.send("There is no longer a quote in the quotes channel for this server")
+                await interaction.followup.send("There is no longer a quote in the 'quotes' channel for this server")
                 return
             #update with the new quote
             try:
@@ -86,6 +87,7 @@ async def quote_of_the_day(interaction: discord.Interaction):
                 print(err)
                 print(chosen_quote)
                 await interaction.followup.send("Database error with UPDATE")
+                return
         else:
             chosen_quote = chosen_quote[0]
     await interaction.followup.send(chosen_quote)
