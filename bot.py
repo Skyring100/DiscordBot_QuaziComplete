@@ -74,7 +74,7 @@ async def quote_of_the_day(interaction: discord.Interaction):
             return
     else:
         #check if the quote needs to updated for today
-        if True:#chosen_quote[1] != datetime.today().strftime("%Y-%m-%d"):
+        if chosen_quote[1] != datetime.today().strftime("%Y-%m-%d"):
             #we need to update quote of the day
             chosen_quote = await choose_random_quote(interaction.guild)
             if not chosen_quote:
