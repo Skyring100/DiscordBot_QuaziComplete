@@ -55,6 +55,7 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
 @client.tree.command(name="quote_of_the_day", description="Selects a quote to be quote of the day!")
 async def quote_of_the_day(interaction: discord.Interaction):
     await interaction.response.defer()
+    '''
     #check if database base quote data
     chosen_quote = db_cursor.execute("SELECT quotes.content, quotes.day_timestamp FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)).fetchone()
     if not chosen_quote:
@@ -98,7 +99,27 @@ async def quote_of_the_day(interaction: discord.Interaction):
         else:
             chosen_quote = chosen_quote[0]
             print("Guild quote recieved")
-    await interaction.followup.send(chosen_quote)
+    '''
+    quote_data = db_cursor.execute("SELECT quotes.content FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)).fetchone()
+    if not quote_data:
+        #add the quote data
+        quote = await choose_random_quote(interaction.guild)
+        success = change_q_of_day(interaction.guild, quote)
+        if not success:
+            await interaction.followup.send("There was a database error", ephemeral=True)
+            return
+    else:
+        quote = quote_data[0]
+    await interaction.followup.send(quote)
+
+@client.tree.command(name="refresh_quote", description="Reselects quote of the day")
+async def refresh_quote(interaction: discord.Interaction):
+    quote = await choose_random_quote(interaction.guild)
+    success = change_q_of_day(interaction.guild, quote)
+    if not success:
+        await interaction.followup.send("There was a database error", ephemeral=True)
+        return
+    await interaction.followup.send(quote)
 
 #audio commands
 @client.tree.command(name="join_vc", description="Bot will join a voice channel")
@@ -191,5 +212,37 @@ async def choose_random_quote(guild: discord.guild):
             return None
         chosen_quote = random.choice(messages).content
         return chosen_quote
+
+def change_q_of_day(server: discord.Guild, quote_content: str):
+    guild_id = server.id
+    test_query = db_cursor.execute("SELECT quotes.guild_id FROM quotes WHERE quotes.guild_id="+str(guild_id)).fetchone()
+    if not test_query:
+        #this server has never used the 'quote of the day' command
+        #add the quote for this server to the database
+        try:
+            query = "INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(guild_id)+", ?, '"+datetime.today().strftime("%Y-%m-%d")+"')"
+            db_cursor.execute(query,(quote_content,))
+            db_con.commit()
+            print("Guild quote entry added")
+        except sqlite3.OperationalError as err:
+            traceback.print_exc()
+            print(quote_content)
+            print(query)
+            return False
+    else:
+        #we need to update quote of the day
+        #update with the new quote
+        try:
+            query = "UPDATE quotes SET content=?, day_timestamp='"+datetime.today().strftime("%Y-%m-%d")+"' WHERE guild_id="+str(guild_id)
+            db_cursor.execute(query, (quote_content,))
+            db_con.commit()
+            print(query)
+            print("Guild quote entry updated")
+        except sqlite3.OperationalError as err:
+            traceback.print_exc()
+            print(quote_content)
+            return False
+    return True
+
 
 client.run(TOKEN)
