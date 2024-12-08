@@ -65,7 +65,7 @@ async def quote_of_the_day(interaction: discord.Interaction):
             return
         #add the quote for this server to the database
         try:
-            query = "INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(interaction.guild_id)+", ?, '"+datetime.today().strftime("%Y-%m-%d")+"'"
+            query = "INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(interaction.guild_id)+", ?, '"+datetime.today().strftime("%Y-%m-%d")+"')"
             db_cursor.execute(query,(chosen_quote,))
             db_con.commit()
             print("Guild quote entry added")
