@@ -114,6 +114,7 @@ async def quote_of_the_day(interaction: discord.Interaction):
 
 @client.tree.command(name="refresh_quote", description="Reselects quote of the day")
 async def refresh_quote(interaction: discord.Interaction):
+    await interaction.response.defer()
     quote = await choose_random_quote(interaction.guild)
     success = change_q_of_day(interaction.guild, quote)
     if not success:
