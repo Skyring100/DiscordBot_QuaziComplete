@@ -65,7 +65,8 @@ async def quote_of_the_day(interaction: discord.Interaction):
             return
         #add the quote for this server to the database
         try:
-            db_cursor.execute("INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(interaction.guild_id)+", ?, '"+datetime.today().strftime("%Y-%m-%d")+"'",(chosen_quote,))
+            query = "INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(interaction.guild_id)+", ?, '"+datetime.today().strftime("%Y-%m-%d")+"'"
+            db_cursor.execute(query,(chosen_quote,))
             db_con.commit()
             print("Guild quote entry added")
         except sqlite3.OperationalError as err:
@@ -83,7 +84,8 @@ async def quote_of_the_day(interaction: discord.Interaction):
                 return
             #update with the new quote
             try:
-                db_cursor.execute("UPDATE quotes SET content=?, day_timestamp='"+datetime.today().strftime("%Y-%m-%d")+"' WHERE guild_id="+str(interaction.guild_id), (chosen_quote,))
+                query = "UPDATE quotes SET content=?, day_timestamp='"+datetime.today().strftime("%Y-%m-%d")+"' WHERE guild_id="+str(interaction.guild_id)
+                db_cursor.execute(query, (chosen_quote,))
                 db_con.commit()
                 print("Guild quote entry updated")
             except sqlite3.OperationalError as err:
