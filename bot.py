@@ -67,6 +67,7 @@ async def quote_of_the_day(interaction: discord.Interaction):
         try:
             db_cursor.execute("INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(interaction.guild_id)+", ?, DATE('now'))",(chosen_quote,))
             db_con.commit()
+            print("Guild quote entry added")
         except sqlite3.OperationalError as err:
             traceback.print_exc()
             print(chosen_quote)
@@ -84,6 +85,7 @@ async def quote_of_the_day(interaction: discord.Interaction):
             try:
                 db_cursor.execute("UPDATE quotes SET content=?, day_timestamp=DATE('now') WHERE guild_id="+str(interaction.guild_id), (chosen_quote,))
                 db_con.commit()
+                print("Guild quote entry updated")
             except sqlite3.OperationalError as err:
                 traceback.print_exc()
                 print(chosen_quote)
@@ -91,6 +93,7 @@ async def quote_of_the_day(interaction: discord.Interaction):
                 return
         else:
             chosen_quote = chosen_quote[0]
+            print("Guild quote recieved")
     await interaction.followup.send(chosen_quote)
 
 #audio commands
