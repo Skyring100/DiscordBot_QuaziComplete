@@ -13,11 +13,17 @@ import sqlite3
 db_con = sqlite3.connect("discord_bot.db")
 #setup cursor needed for queries
 db_cursor = db_con.cursor()
+
 #create tables if they do not exist
 try:
     db_cursor.execute("SELECT * FROM quotes")
 except sqlite3.OperationalError:
     db_cursor.execute("CREATE TABLE quotes(guild_id, content, day_timestamp)")
+
+try:
+    db_cursor.execute("SELECT * FROM gifs")
+except sqlite3.OperationalError:
+    db_cursor.execute("CREATE TABLE gifs(guild_id, gif_link, category)")
 
 bot_has_pin_commands: bool = False
 try:
@@ -55,51 +61,6 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
 @client.tree.command(name="quote_of_the_day", description="Selects a quote to be quote of the day!")
 async def quote_of_the_day(interaction: discord.Interaction):
     await interaction.response.defer()
-    '''
-    #check if database base quote data
-    chosen_quote = db_cursor.execute("SELECT quotes.content, quotes.day_timestamp FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)).fetchone()
-    if not chosen_quote:
-        #this server has never used the 'quote of the day' command
-        chosen_quote = await choose_random_quote(interaction.guild)
-        if not chosen_quote:
-            await interaction.followup.send("There is no 'quotes' channel with quotes in it. Make one and start adding!")
-            return
-        #add the quote for this server to the database
-        try:
-            query = "INSERT INTO quotes(guild_id, content, day_timestamp) VALUES ("+str(interaction.guild_id)+", ?, '"+datetime.today().strftime("%Y-%m-%d")+"')"
-            db_cursor.execute(query,(chosen_quote,))
-            db_con.commit()
-            print("Guild quote entry added")
-        except sqlite3.OperationalError as err:
-            traceback.print_exc()
-            print(chosen_quote)
-            print(query)
-            await interaction.followup.send("Database error with INSERT")
-            return
-    else:
-        #check if the quote needs to updated for today
-        if chosen_quote[1] != datetime.today().strftime("%Y-%m-%d"):
-            #we need to update quote of the day
-            chosen_quote = await choose_random_quote(interaction.guild)
-            if not chosen_quote:
-                await interaction.followup.send("There is no longer a quote in the 'quotes' channel for this server")
-                return
-            #update with the new quote
-            try:
-                query = "UPDATE quotes SET content=?, day_timestamp='"+datetime.today().strftime("%Y-%m-%d")+"' WHERE guild_id="+str(interaction.guild_id)
-                db_cursor.execute(query, (chosen_quote,))
-                db_con.commit()
-                print(query)
-                print("Guild quote entry updated")
-            except sqlite3.OperationalError as err:
-                traceback.print_exc()
-                print(chosen_quote)
-                await interaction.followup.send("Database error with UPDATE")
-                return
-        else:
-            chosen_quote = chosen_quote[0]
-            print("Guild quote recieved")
-    '''
     quote_data = db_cursor.execute("SELECT quotes.content, quotes.day_timestamp FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)).fetchone()
     if not quote_data or quote_data[1] != datetime.today().strftime("%Y-%m-%d"):
         #There is either not an quote for server or the quote needs to be updated
