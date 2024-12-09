@@ -100,9 +100,9 @@ async def quote_of_the_day(interaction: discord.Interaction):
             chosen_quote = chosen_quote[0]
             print("Guild quote recieved")
     '''
-    quote_data = db_cursor.execute("SELECT quotes.content FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)).fetchone()
-    if not quote_data:
-        #add the quote data
+    quote_data = db_cursor.execute("SELECT quotes.content, quotes.day_timestamp FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)).fetchone()
+    if not quote_data or quote_data[1] != datetime.today().strftime("%Y-%m-%d"):
+        #There is either not an quote for server or the quote needs to be updated
         quote = await choose_random_quote(interaction.guild)
         success = change_q_of_day(interaction.guild, quote)
         if not success:
