@@ -95,6 +95,8 @@ async def add_gif(interaction: discord.Interaction, gif:str, category:str=None):
         safe_input.append(category)
 
     try:
+        print(query)
+        print(safe_input)
         db_cursor.execute(query, safe_input)
         await interaction.followup.send("Gif successfully added:\n"+gif)
     except sqlite3.OperationalError:
@@ -110,6 +112,9 @@ async def send_gif(interaction: discord.Interaction, category:str=None):
         query += " and gifs.category=?"
         safe_input.append(category)
     gif_results = db_cursor.execute(query, safe_input).fetchall()
+    if not gif_results:
+        await interaction.followup.send("There are no gifs added for this server. Try adding some with the command!")
+        return
     await interaction.followup.send(random.choice(gif_results)[0])
 
 
