@@ -123,7 +123,12 @@ async def send_gif(interaction: discord.Interaction, category:str=None):
 async def gif_categories(interaction: discord.Interaction):
     await interaction.response.defer()
     categories = db_cursor.execute("SELECT gifs.category FROM gifs WHERE gifs.guild_id="+str(interaction.guild_id))
-    await interaction.followup.send("This server has the following gif categories:\n"+str(categories))
+    string_categories = ""
+    for c in categories:
+        string_categories += str(c[0]+", ")
+    #remove the last ", " from string
+    string_categories = string_categories[:-2]
+    await interaction.followup.send("This server has the following gif categories:\n"+string_categories)
 
 
 #audio commands
