@@ -113,9 +113,15 @@ async def send_gif(interaction: discord.Interaction, category:str=None):
         safe_input.append(category)
     gif_results = db_cursor.execute(query, safe_input).fetchall()
     if not gif_results:
-        await interaction.followup.send("There are no gifs added for this server. Try adding some with the command!")
+        await interaction.followup.send("There are no gifs added for this server or category. Try adding some with commands!")
         return
     await interaction.followup.send(random.choice(gif_results)[0])
+
+@client.tree.command(name="gif_categories", description="Lists all categories of gifs created for this server")
+async def gif_categories(interaction: discord.Interaction):
+    await interaction.response.defer()
+    categories = db_cursor.execute("SELECT gifs.category FROM gifs WHERE gifs.guild_id="+str(interaction.guild_id))
+    await interaction.followup.send("This server has the following gif categories:\n"+str(categories))
 
 
 #audio commands
