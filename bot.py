@@ -122,7 +122,7 @@ async def send_gif(interaction: discord.Interaction, category:str=None):
 @client.tree.command(name="gif_categories", description="Lists all categories of gifs created for this server")
 async def gif_categories(interaction: discord.Interaction):
     await interaction.response.defer()
-    categories = db_cursor.execute("SELECT gifs.category FROM gifs WHERE gifs.guild_id="+str(interaction.guild_id))
+    categories = db_cursor.execute("SELECT DISTINCT gifs.category FROM gifs WHERE gifs.guild_id="+str(interaction.guild_id))
     string_categories = ""
     for c in categories:
         string_categories += str(c[0]+", ")
