@@ -83,6 +83,36 @@ async def refresh_quote(interaction: discord.Interaction):
         return
     await interaction.followup.send(quote)
 
+@client.tree.command(name="add_gif", description="Adds a gif to he list of gif the bot can send")
+async def add_gif(interaction: discord.Interaction, gif:str, category:str=None):
+    await interaction.response.defer()
+    query = "INSERT INTO gifs(guild_id, gif_link, category) VALUES ("+str(interaction.guild_id)+", ?, "
+    safe_input = [gif]
+    if not category:
+        query += "NULL)"
+    else:
+        query += "?)"
+        safe_input.append(category)
+
+    try:
+        db_cursor.execute(query, safe_input)
+        await interaction.followup.send("Gif successfully added:\n"+gif)
+    except sqlite3.OperationalError:
+        traceback.print_exc()
+        print("Gif: "+gif+" category: "+str(category))
+
+@client.tree.command(name="send_gif", description="Sends a random gif that the bot has been allowed to send")
+async def send_gif(interaction: discord.Interaction, category:str=None):
+    await interaction.response.defer()
+    query = "SELECT gifs.gif_link FROM gifs WHERE gifs.guild_id="+str(interaction.guild_id)
+    safe_input = []
+    if category:
+        query += " and gifs.category=?"
+        safe_input.append(category)
+    gif_results = db_cursor.execute(query, safe_input).fetchall()
+    await interaction.followup.send(random.choice(gif_results)[0])
+
+
 #audio commands
 @client.tree.command(name="join_vc", description="Bot will join a voice channel")
 async def join_vc(interaction: discord.Interaction, voice_channel: discord.VoiceChannel):
