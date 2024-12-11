@@ -24,6 +24,7 @@ try:
     db_cursor.execute("SELECT * FROM gifs")
 except sqlite3.OperationalError:
     db_cursor.execute("CREATE TABLE gifs(guild_id, gif_link, category)")
+db_con.commit()
 
 bot_has_pin_commands: bool = False
 try:
@@ -98,6 +99,7 @@ async def add_gif(interaction: discord.Interaction, gif:str, category:str=None):
         print(query)
         print(safe_input)
         db_cursor.execute(query, safe_input)
+        db_con.commit()
         await interaction.followup.send("Gif successfully added:\n"+gif)
     except sqlite3.OperationalError:
         traceback.print_exc()
