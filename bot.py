@@ -142,19 +142,19 @@ async def gif_categories(interaction: discord.Interaction):
 async def join_vc(interaction: discord.Interaction, voice_channel: discord.VoiceChannel):
     if interaction.guild.voice_client:
         await interaction.guild.voice_client.disconnect()
-    await interaction.response.send_message("Joining voice channel", ephemeral=True)
+    await interaction.response.send_message("Joining voice channel "+voice_channel.name)
     return await voice_channel.connect()
     
 @client.tree.command(name="vc_with_me", description="Bot will join the voice channel the user is in")
 async def vc_with_me(interaction: discord.Interaction):
-    await interaction.response.send_message("Joining voice channel", ephemeral=True)
+    await interaction.response.send_message("Joining voice channel with "+interaction.user.name)
     return await interaction.user.voice.channel.connect()
 
 @client.tree.command(name="leave_vc", description="Bot will leave the vc it is currently in")
 async def leave_vc(interaction: discord.Interaction):
     if interaction.guild.voice_client:
         await interaction.guild.voice_client.disconnect()
-        await interaction.response.send_message("Voice channel disconnected", ephemeral=True)
+        await interaction.response.send_message("Voice channel disconnected")
     else:
         await interaction.response.send_message("Bot is not in a voice channel", ephemeral=True)
 
@@ -170,7 +170,7 @@ async def youtube(interaction: discord.Interaction, url: str):
     if not video_path:
         await interaction.followup.send("Audio is too long to download", ephemeral=True)
     else:
-        await interaction.followup.send("Audio is ready!", ephemeral=True)
+        await interaction.followup.send("Audio is ready!")
         voice.play(FFmpegPCMAudio(video_path))
 
 #hardware commands
@@ -179,7 +179,7 @@ async def youtube(interaction: discord.Interaction, url: str):
 async def change_led(interaction: discord.Interaction, is_on: bool):
     if bot_has_pin_commands:
         pin_functions.change_led(is_on)
-        await interaction.response.send_message("LED changed", ephemeral=True)
+        await interaction.response.send_message("LED changed")
     else:
         await interaction.response.send_message("Bot currently does not have access to pin I/O", ephemeral=True)
 
