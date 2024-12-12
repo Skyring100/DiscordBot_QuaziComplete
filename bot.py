@@ -48,7 +48,8 @@ async def on_ready():
     await client.tree.sync()
     print("Quazi Clone online")
 
-#general commands
+#testing commands
+
 @client.tree.command(name="hello_world", description="Say hello to my little friend!")
 async def hello_world(interaction: discord.Interaction):
     await interaction.response.send_message("Hello World!")
@@ -58,6 +59,8 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
     await interaction.response.send_message("What have you done", ephemeral=True)
     for i in range(amount):
         await interaction.channel.send(message)
+
+#quote of the day commands
 
 @client.tree.command(name="quote_of_the_day", description="Selects a quote to be quote of the day!")
 async def quote_of_the_day(interaction: discord.Interaction):
@@ -83,6 +86,8 @@ async def refresh_quote(interaction: discord.Interaction):
         await interaction.followup.send("There was a database error", ephemeral=True)
         return
     await interaction.followup.send(quote)
+
+#gif commands
 
 @client.tree.command(name="add_gif", description="Adds a gif to he list of gif the bot can send")
 async def add_gif(interaction: discord.Interaction, gif:str, category:str=None):
@@ -132,6 +137,7 @@ async def gif_categories(interaction: discord.Interaction):
 
 
 #audio commands
+
 @client.tree.command(name="join_vc", description="Bot will join a voice channel")
 async def join_vc(interaction: discord.Interaction, voice_channel: discord.VoiceChannel):
     if interaction.guild.voice_client:
@@ -168,6 +174,7 @@ async def youtube(interaction: discord.Interaction, url: str):
         voice.play(FFmpegPCMAudio(video_path))
 
 #hardware commands
+
 @client.tree.command(name="change_led", description="Changes LED on hardware")
 async def change_led(interaction: discord.Interaction, is_on: bool):
     if bot_has_pin_commands:
@@ -177,6 +184,7 @@ async def change_led(interaction: discord.Interaction, is_on: bool):
         await interaction.response.send_message("Bot currently does not have access to pin I/O", ephemeral=True)
 
 #helper functions
+
 async def download_video(url: str):
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -202,7 +210,6 @@ async def download_video(url: str):
         shutil.move(video_name, download_folder)
     return video_path
 
-#helper functions
 def clear_audio_folder():
     for file in os.listdir(download_folder):
         os.remove(file)
