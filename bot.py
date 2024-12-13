@@ -19,11 +19,15 @@ try:
     db_cursor.execute("SELECT * FROM quotes")
 except sqlite3.OperationalError:
     db_cursor.execute("CREATE TABLE quotes(guild_id, content, day_timestamp)")
-
 try:
     db_cursor.execute("SELECT * FROM gifs")
 except sqlite3.OperationalError:
     db_cursor.execute("CREATE TABLE gifs(guild_id, gif_link, category)")
+try:
+    db_cursor.execute("SELECT * FROM addable_role")
+except sqlite3.OperationalError:
+    db_cursor.execute("CREATE TABLE addable_role(guild_id, role_id)")
+
 db_con.commit()
 
 bot_has_pin_commands: bool = False
@@ -135,6 +139,20 @@ async def gif_categories(interaction: discord.Interaction):
     string_categories = string_categories[:-2]
     await interaction.followup.send("This server has the following gif categories:\n"+string_categories)
 
+#role commands
+
+@client.tree.command(name="add_role", description="Allows the user to add one of the authorized roles to themselves")
+async def add_role(interaction: discord.Interaction, role: discord.Role):
+    await interaction.response.defer()
+    
+@client.tree.command(name="authorize_role", description="Allows an admin to add roles that people can add to themsleves with the bot")
+async def authorize_role(interaction: discord.Interaction, role: discord.Role):
+    await interaction.response.defer()
+    if not interaction.user.guild_permissions.manage_roles:
+        await interaction.followup.send("You must have the 'manage roles' permission in the server to use this command")
+        return
+    db_cursor.execute()  
+    
 
 #audio commands
 
@@ -260,6 +278,5 @@ def change_q_of_day(server: discord.Guild, quote_content: str):
             print(quote_content)
             return False
     return True
-
 
 client.run(TOKEN)
