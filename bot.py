@@ -18,15 +18,15 @@ db_cursor = db_con.cursor()
 try:
     db_cursor.execute("SELECT * FROM quotes")
 except sqlite3.OperationalError:
-    db_cursor.execute("CREATE TABLE quotes(guild_id, content, day_timestamp)")
+    db_cursor.execute("CREATE TABLE quotes(guild_id int, content varchar(500), day_timestamp varchar(10), PRIMARY KEY(guild_id, content))")
 try:
     db_cursor.execute("SELECT * FROM gifs")
 except sqlite3.OperationalError:
-    db_cursor.execute("CREATE TABLE gifs(guild_id, gif_link, category)")
+    db_cursor.execute("CREATE TABLE gifs(guild_id int, gif_link varchar(500), category varchar(50), PRIMARY KEY (guild_id, gif_link))")
 try:
     db_cursor.execute("SELECT * FROM addable_role")
 except sqlite3.OperationalError:
-    db_cursor.execute("CREATE TABLE addable_role(guild_id, role_id)")
+    db_cursor.execute("CREATE TABLE addable_role(guild_id int, role_id int, PRIMARY KEY (guild_id, role_id))")
 
 db_con.commit()
 
