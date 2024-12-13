@@ -144,7 +144,7 @@ async def gif_categories(interaction: discord.Interaction):
 @client.tree.command(name="add_role", description="Allows the user to add one of the authorized roles to themselves")
 async def add_role(interaction: discord.Interaction, role: discord.Role):
     await interaction.response.defer()
-    role_authorized = db_cursor.execute("SELECT * FROM addable_roles WHERE guild_id="+str(interaction.guild_id)+" AND role_id="+str(role.id))
+    role_authorized = db_cursor.execute("SELECT * FROM addable_roles(guild_id, role_id) WHERE guild_id="+str(interaction.guild_id)+" AND role_id="+str(role.id))
     if role_authorized:
         await interaction.user.add_roles(role)
         await interaction.followup.send(f"{interaction.user.name} joined {role.name}")
