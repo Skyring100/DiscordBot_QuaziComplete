@@ -169,7 +169,7 @@ async def list_authorized_roles(interaction: discord.Interaction):
     roles = db_cursor.execute(f"SELECT addable_roles.role_id FROM addable_roles WHERE addable_roles.guild_id={interaction.guild_id}")
     result_str = ""
     for r in roles:
-        role_data = await interaction.guild.get_role(r[0])
+        role_data = interaction.guild.get_role(r[0])
         result_str += str(role_data.name+", ")
     #remove the last ", " from string
     result_str = result_str[:-2]  
