@@ -27,6 +27,10 @@ try:
     db_cursor.execute("SELECT * FROM addable_roles")
 except sqlite3.OperationalError:
     db_cursor.execute("CREATE TABLE addable_roles(guild_id int, role_id int, PRIMARY KEY (guild_id, role_id))")
+try:
+    db_cursor.execute("SELECT * FROM welcome_messages")
+except sqlite3.OperationalError:
+    db_cursor.execute("CREATE TABLE welcome_messages(guild_id int, message varchar(500) NOT NULL, welcome_channel_id int NOT NULL, PRIMARY KEY (guild_id))")
 
 db_con.commit()
 
@@ -52,6 +56,15 @@ async def on_ready():
     await client.tree.sync()
     print("Quazi Clone online")
 
+@client.event
+async def on_member_join(member: discord.Member):
+    #send welcome message if configured
+    welcome_data = db_cursor.execute(f"SELECT welcome_messages.message, welcome_messages.welcome_channel_id FROM welcome_messages WHERE welcome_messages.guild_id={member.guild.id}").fetchone()
+    if welcome_data:
+        await member.guild.get_channel(welcome_data[1]).send(f"Hello {member.mention},\n{welcome_data[0]}")
+
+
+
 #testing commands
 
 @client.tree.command(name="hello_world", description="Say hello to my little friend!")
@@ -63,6 +76,22 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
     await interaction.response.send_message("What have you done", ephemeral=True)
     for i in range(amount):
         await interaction.channel.send(message)
+
+@client.tree.command(name="set_welcome_message", description="Sets the welcome message that the bot will send upon a new user joining the server")
+async def set_welcome_message(interaction: discord.Interaction, message: str, welcome_channel: discord.TextChannel):
+    #make sure the caller is authorized to change the welcome message
+    if not interaction.user.guild_permissions.manage_guild:
+        await interaction.response.send_message("You are not authorized to set the welcome message for this server")
+        return
+    await interaction.response.defer()
+    server_has_welcome = db_cursor.execute(f"SELECT welcome_messages.message FROM welcome_messages WHERE welcome_messages.guild_id={interaction.guild_id}").fetchone()
+    if server_has_welcome:
+        db_cursor.execute(f"UPDATE welcome_messages SET message=?, welcome_channel_id={welcome_channel.id} WHERE guild_id={interaction.guild_id}", [message])
+    else:
+        db_cursor.execute(f"INSERT INTO welcome_messages(guild_id, message, welcome_channel_id) VALUES({interaction.guild_id}, ?, {welcome_channel.id})", [message])
+    db_con.commit()
+    await interaction.followup.send(f"A new welcome message has be set for the server:\n{message}")
+
 
 #quote of the day commands
 
