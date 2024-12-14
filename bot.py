@@ -163,6 +163,17 @@ async def authorize_role(interaction: discord.Interaction, role: discord.Role):
         return
     await interaction.followup.send("Role authorized")
 
+@client.tree.command(name="deauthorize_role", description="Removes a previously authorized role")
+async def deauthorize_role(interaction: discord.Interaction, role: discord.Role):
+    await interaction.response.defer()
+    if not interaction.user.guild_permissions.manage_roles:
+        await interaction.followup.send("You must have the 'manage roles' permission in the server to use this command")
+        return
+    r = db_cursor.execute(f"DELETE FROM addable_roles WHERE addable_roles.guild_id={interaction.guild_id} AND addable_roles.role_id={role.id}")
+    print(r)
+    db_con.commit()
+    await interaction.followup.send("Role deauthorized")
+
 @client.tree.command(name="list_authorized_roles", description="Shows a list of all roles that are authorized")
 async def list_authorized_roles(interaction: discord.Interaction):
     await interaction.response.defer()
