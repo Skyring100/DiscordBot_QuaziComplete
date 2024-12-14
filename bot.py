@@ -142,7 +142,7 @@ async def gif_categories(interaction: discord.Interaction):
 @client.tree.command(name="add_role", description="Allows the user to add one of the authorized roles to themselves")
 async def add_role(interaction: discord.Interaction, role: discord.Role):
     await interaction.response.defer()
-    role_authorized = db_cursor.execute(f"SELECT * FROM addable_roles WHERE guild_id={interaction.guild_id} AND role_id={role.id}")
+    role_authorized = db_cursor.execute(f"SELECT addable_roles.role_id FROM addable_roles WHERE addable_roles.guild_id={interaction.guild_id} AND addable_roles.role_id={role.id}").fetchone()
     if role_authorized:
         await interaction.user.add_roles(role)
         await interaction.followup.send(f"{interaction.user.name} joined {role.name}")
@@ -169,7 +169,7 @@ async def deauthorize_role(interaction: discord.Interaction, role: discord.Role)
     if not interaction.user.guild_permissions.manage_roles:
         await interaction.followup.send("You must have the 'manage roles' permission in the server to use this command")
         return
-    r = db_cursor.execute(f"DELETE FROM addable_roles WHERE addable_roles.guild_id={interaction.guild_id} AND addable_roles.role_id={role.id}")
+    r = db_cursor.execute(f"DELETE FROM addable_roles WHERE addable_roles.guild_id={interaction.guild_id} AND addable_roles.role_id={role.id}").fetchone()
     print(r)
     db_con.commit()
     await interaction.followup.send("Role deauthorized")
