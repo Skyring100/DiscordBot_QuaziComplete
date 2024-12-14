@@ -132,11 +132,7 @@ async def send_gif(interaction: discord.Interaction, category:str=None):
 async def gif_categories(interaction: discord.Interaction):
     await interaction.response.defer()
     categories = db_cursor.execute("SELECT DISTINCT gifs.category FROM gifs WHERE gifs.guild_id="+str(interaction.guild_id))
-    string_categories = ""
-    for c in categories:
-        string_categories += str(c[0]+", ")
-    #remove the last ", " from string
-    string_categories = string_categories[:-2]
+    string_categories = str_query_results(categories)
     await interaction.followup.send("This server has the following gif categories:\n"+string_categories)
 
 #role commands
@@ -158,6 +154,14 @@ async def authorize_role(interaction: discord.Interaction, role: discord.Role):
         await interaction.followup.send("You must have the 'manage roles' permission in the server to use this command")
         return
     db_cursor.execute(f"INSERT INTO addable_roles(guild_id, role_id) VALUES ({interaction.guild_id}, {role.id})")
+    db_con.commit()
+    await interaction.followup.send("Role authorized")
+
+@client.tree.command(name="list_authorized_roles", description="Shows a list of all roles that are authorized")
+async def list_authorized_roles(interaction: discord.Interaction):
+    await interaction.response.defer()
+    roles = db_cursor.execute(f"SELECT addable_roles.role_id FROM addable_roles WHERE addable_roles.guild_id={interaction.guild_id}")
+    roles_str = str_query_results(roles)
     await interaction.followup.send("Role authorized")
     
 
@@ -285,5 +289,13 @@ def change_q_of_day(server: discord.Guild, quote_content: str):
             print(quote_content)
             return False
     return True
+
+def str_query_results(results):
+    print(type(results))
+    result_str = ""
+    for r in results:
+        result_str += str(r[0]+", ")
+    #remove the last ", " from string
+    return result_str[:-2]  
 
 client.run(TOKEN)
