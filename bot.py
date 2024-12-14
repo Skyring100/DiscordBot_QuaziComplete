@@ -161,8 +161,12 @@ async def authorize_role(interaction: discord.Interaction, role: discord.Role):
 async def list_authorized_roles(interaction: discord.Interaction):
     await interaction.response.defer()
     roles = db_cursor.execute(f"SELECT addable_roles.role_id FROM addable_roles WHERE addable_roles.guild_id={interaction.guild_id}")
-    roles_str = str_query_results(roles)
-    await interaction.followup.send("Role authorized")
+    result_str = ""
+    for r in roles:
+        result_str += str(await interaction.guild.get_role(r[0]).name+", ")
+    #remove the last ", " from string
+    result_str = result_str[:-2]  
+    await interaction.followup.send(f"The following roles to choose from are:\n{result_str}")
     
 
 #audio commands
