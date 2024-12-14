@@ -113,6 +113,8 @@ async def add_gif(interaction: discord.Interaction, gif:str, category:str=None):
     except sqlite3.OperationalError:
         traceback.print_exc()
         print("Gif: "+gif+" category: "+str(category))
+    except sqlite3.IntegrityError:
+        await interaction.followup.send("This gif has already been added")
 
 @client.tree.command(name="send_gif", description="Sends a random gif that the bot has been allowed to send")
 async def send_gif(interaction: discord.Interaction, category:str=None):
@@ -153,8 +155,12 @@ async def authorize_role(interaction: discord.Interaction, role: discord.Role):
     if not interaction.user.guild_permissions.manage_roles:
         await interaction.followup.send("You must have the 'manage roles' permission in the server to use this command")
         return
-    db_cursor.execute(f"INSERT INTO addable_roles(guild_id, role_id) VALUES ({interaction.guild_id}, {role.id})")
-    db_con.commit()
+    try:
+        db_cursor.execute(f"INSERT INTO addable_roles(guild_id, role_id) VALUES ({interaction.guild_id}, {role.id})")
+        db_con.commit()
+    except sqlite3.IntegrityError:
+        await interaction.followup.send("Role has already been authorized")
+        return
     await interaction.followup.send("Role authorized")
 
 @client.tree.command(name="list_authorized_roles", description="Shows a list of all roles that are authorized")
@@ -163,7 +169,8 @@ async def list_authorized_roles(interaction: discord.Interaction):
     roles = db_cursor.execute(f"SELECT addable_roles.role_id FROM addable_roles WHERE addable_roles.guild_id={interaction.guild_id}")
     result_str = ""
     for r in roles:
-        result_str += str(await interaction.guild.get_role(r[0]).name+", ")
+        role_data = await interaction.guild.get_role(r[0])
+        result_str += str(role_data.name+", ")
     #remove the last ", " from string
     result_str = result_str[:-2]  
     await interaction.followup.send(f"The following roles to choose from are:\n{result_str}")
