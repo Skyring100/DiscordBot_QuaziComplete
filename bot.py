@@ -69,7 +69,7 @@ async def spam(interaction: discord.Interaction, message: str, amount: int = 5):
 @client.tree.command(name="quote_of_the_day", description="Selects a quote to be quote of the day!")
 async def quote_of_the_day(interaction: discord.Interaction):
     await interaction.response.defer()
-    quote_data = db_cursor.execute("SELECT quotes.content, quotes.day_timestamp FROM quotes WHERE quotes.guild_id="+str(interaction.guild_id)).fetchone()
+    quote_data = db_cursor.execute(f"SELECT quotes.content, quotes.day_timestamp FROM quotes WHERE quotes.guild_id={interaction.guild_id}").fetchone()
     if not quote_data or quote_data[1] != datetime.today().strftime("%Y-%m-%d"):
         #There is either not an quote for server or the quote needs to be updated
         quote = await choose_random_quote(interaction.guild)
@@ -96,7 +96,7 @@ async def refresh_quote(interaction: discord.Interaction):
 @client.tree.command(name="add_gif", description="Adds a gif to he list of gif the bot can send")
 async def add_gif(interaction: discord.Interaction, gif:str, category:str=None):
     await interaction.response.defer()
-    query = "INSERT INTO gifs(guild_id, gif_link, category) VALUES ("+str(interaction.guild_id)+", ?, "
+    query = f"INSERT INTO gifs(guild_id, gif_link, category) VALUES ({interaction.guild_id}, ?, "
     safe_input = [gif]
     if not category:
         query += "NULL)"
@@ -109,7 +109,7 @@ async def add_gif(interaction: discord.Interaction, gif:str, category:str=None):
         print(safe_input)
         db_cursor.execute(query, safe_input)
         db_con.commit()
-        await interaction.followup.send("Gif successfully added:\n"+gif)
+        await interaction.followup.send(f"Gif successfully added:\n{gif}")
     except sqlite3.OperationalError:
         traceback.print_exc()
         print("Gif: "+gif+" category: "+str(category))
@@ -119,7 +119,7 @@ async def add_gif(interaction: discord.Interaction, gif:str, category:str=None):
 @client.tree.command(name="send_gif", description="Sends a random gif that the bot has been allowed to send")
 async def send_gif(interaction: discord.Interaction, category:str=None):
     await interaction.response.defer()
-    query = "SELECT gifs.gif_link FROM gifs WHERE gifs.guild_id="+str(interaction.guild_id)
+    query = f"SELECT gifs.gif_link FROM gifs WHERE gifs.guild_id={interaction.guild_id}"
     safe_input = []
     if category:
         query += " and gifs.category=?"
@@ -133,9 +133,9 @@ async def send_gif(interaction: discord.Interaction, category:str=None):
 @client.tree.command(name="gif_categories", description="Lists all categories of gifs created for this server")
 async def gif_categories(interaction: discord.Interaction):
     await interaction.response.defer()
-    categories = db_cursor.execute("SELECT DISTINCT gifs.category FROM gifs WHERE gifs.guild_id="+str(interaction.guild_id))
+    categories = db_cursor.execute(f"SELECT DISTINCT gifs.category FROM gifs WHERE gifs.guild_id={interaction.guild_id}")
     string_categories = str_query_results(categories)
-    await interaction.followup.send("This server has the following gif categories:\n"+string_categories)
+    await interaction.followup.send(f"This server has the following gif categories:\n{string_categories}")
 
 #role commands
 
@@ -195,12 +195,12 @@ async def list_authorized_roles(interaction: discord.Interaction):
 async def join_vc(interaction: discord.Interaction, voice_channel: discord.VoiceChannel):
     if interaction.guild.voice_client:
         await interaction.guild.voice_client.disconnect()
-    await interaction.response.send_message("Joining voice channel "+voice_channel.name)
+    await interaction.response.send_message(f"Joining voice channel {voice_channel.name}")
     return await voice_channel.connect()
     
 @client.tree.command(name="vc_with_me", description="Bot will join the voice channel the user is in")
 async def vc_with_me(interaction: discord.Interaction):
-    await interaction.response.send_message("Joining voice channel with "+interaction.user.name)
+    await interaction.response.send_message(f"Joining voice channel with {interaction.user.name}")
     return await interaction.user.voice.channel.connect()
 
 @client.tree.command(name="leave_vc", description="Bot will leave the vc it is currently in")
