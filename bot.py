@@ -180,8 +180,8 @@ async def add_role(interaction: discord.Interaction, role: discord.Role):
     
 @client.tree.command(name="authorize_role", description="Allows an admin to add roles that people can add to themsleves with the bot")
 async def authorize_role(interaction: discord.Interaction, role: discord.Role):
-    if role.is_bot_managed:
-        await interaction.response.send_message("Cannot authorize bot managed roles")
+    if role.is_default:
+        await interaction.response.send_message("Cannot authorize this bot's own role")
         return
     await interaction.response.defer()
     if not interaction.user.guild_permissions.manage_roles:
