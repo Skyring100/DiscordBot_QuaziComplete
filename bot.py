@@ -190,7 +190,7 @@ async def authorize_role(interaction: discord.Interaction, role: discord.Role):
     except sqlite3.IntegrityError:
         await interaction.followup.send("Role has already been authorized")
         return
-    await interaction.followup.send("Role authorized")
+    await interaction.followup.send(f"Role authorized:{role.name}")
 
 @client.tree.command(name="deauthorize_role", description="Removes a previously authorized role")
 async def deauthorize_role(interaction: discord.Interaction, role: discord.Role):
@@ -200,7 +200,7 @@ async def deauthorize_role(interaction: discord.Interaction, role: discord.Role)
         return
     db_cursor.execute(f"DELETE FROM addable_roles WHERE addable_roles.guild_id={interaction.guild_id} AND addable_roles.role_id={role.id}")
     db_con.commit()
-    await interaction.followup.send("Role deauthorized")
+    await interaction.followup.send(f"Role deauthorized:{role.name}")
 
 @client.tree.command(name="list_authorized_roles", description="Shows a list of all roles that are authorized")
 async def list_authorized_roles(interaction: discord.Interaction):
