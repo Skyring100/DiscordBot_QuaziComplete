@@ -151,6 +151,9 @@ async def add_role(interaction: discord.Interaction, role: discord.Role):
     
 @client.tree.command(name="authorize_role", description="Allows an admin to add roles that people can add to themsleves with the bot")
 async def authorize_role(interaction: discord.Interaction, role: discord.Role):
+    if role.is_bot_managed:
+        await interaction.response.send_message("Cannot authorize bot managed roles")
+        return
     await interaction.response.defer()
     if not interaction.user.guild_permissions.manage_roles:
         await interaction.followup.send("You must have the 'manage roles' permission in the server to use this command")
@@ -169,8 +172,7 @@ async def deauthorize_role(interaction: discord.Interaction, role: discord.Role)
     if not interaction.user.guild_permissions.manage_roles:
         await interaction.followup.send("You must have the 'manage roles' permission in the server to use this command")
         return
-    r = db_cursor.execute(f"DELETE FROM addable_roles WHERE addable_roles.guild_id={interaction.guild_id} AND addable_roles.role_id={role.id}").fetchone()
-    print(r)
+    db_cursor.execute(f"DELETE FROM addable_roles WHERE addable_roles.guild_id={interaction.guild_id} AND addable_roles.role_id={role.id}")
     db_con.commit()
     await interaction.followup.send("Role deauthorized")
 
