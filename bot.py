@@ -344,7 +344,7 @@ def str_query_results(results: sqlite3.Cursor):
     print(results.arraysize)
     result_str = ""
     for r in results.fetchall():
-        result_str += str(r[0]+", ")
+        result_str += str(str(r[0])+", ")
     #remove the last ", " from string
     return result_str[:-2]  
 
