@@ -35,11 +35,13 @@ except sqlite3.OperationalError:
 db_con.commit()
 
 bot_has_pin_commands: bool = False
+'''
 try:
     import pin_functions
     bot_has_pin_commands = True
 except ModuleNotFoundError:
     print("Bot not run on Raspberry Pi, skipping pin functions")
+'''
 
 #folder setup
 download_folder = "downloaded_audio"
@@ -164,7 +166,10 @@ async def gif_categories(interaction: discord.Interaction):
     await interaction.response.defer()
     categories = db_cursor.execute(f"SELECT DISTINCT gifs.category FROM gifs WHERE gifs.guild_id={interaction.guild_id}")
     string_categories = str_query_results(categories)
-    await interaction.followup.send(f"This server has the following gif categories:\n{string_categories}")
+    if string_categories != "":
+        await interaction.followup.send(f"This server has the following gif categories:\n{string_categories}")
+    else:
+        await interaction.followup.send(f"This server currently has no categories for gifs")
 
 #role commands
 
@@ -341,9 +346,13 @@ def change_q_of_day(server: discord.Guild, quote_content: str):
     return True
 
 def str_query_results(results: sqlite3.Cursor):
-    print(results.arraysize)
+    res_list = results.fetchall()
+    if len(res_list) == 0:
+        return ""
     result_str = ""
-    for r in results.fetchall():
+    for r in res_list:
+        if type(r) == None:
+            continue
         result_str += str(str(r[0])+", ")
     #remove the last ", " from string
     return result_str[:-2]  
