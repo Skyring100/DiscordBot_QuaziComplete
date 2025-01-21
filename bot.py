@@ -352,6 +352,7 @@ def str_query_results(results: sqlite3.Cursor):
     result_str = ""
     for r in result_list:
         print(r)
+        print(type(r[0]))
         if type(r[0]) == None:
             continue
         result_str += str(str(r[0])+", ")
