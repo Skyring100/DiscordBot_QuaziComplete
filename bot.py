@@ -346,14 +346,13 @@ def change_q_of_day(server: discord.Guild, quote_content: str):
     return True
 
 def str_query_results(results: sqlite3.Cursor):
-    res_list = results.fetchall()
-    if len(res_list) == 0:
+    result_list = results.fetchall()
+    if len(result_list) == 0:
         return ""
     result_str = ""
-    for r in res_list:
-        print(type(r))
+    for r in result_list:
         print(r)
-        if type(r) == None:
+        if type(r[0]) == None:
             continue
         result_str += str(str(r[0])+", ")
     #remove the last ", " from string
