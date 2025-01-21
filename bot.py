@@ -9,6 +9,7 @@ import random
 from datetime import datetime
 import traceback
 import sqlite3
+from types import NoneType
 #connect to the bot's database
 db_con = sqlite3.connect("discord_bot.db")
 #setup cursor needed for queries
@@ -353,7 +354,7 @@ def str_query_results(results: sqlite3.Cursor):
     for r in result_list:
         print(r)
         print(type(r[0]))
-        if type(r[0]) == None:
+        if type(r[0]) == NoneType or type(r[0]) == None:
             continue
         result_str += str(str(r[0])+", ")
     #remove the last ", " from string
