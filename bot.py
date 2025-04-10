@@ -98,9 +98,12 @@ async def quote_of_the_day(interaction: discord.Interaction):
     await interaction.response.defer()
     quote_data = db_cursor.execute(f"SELECT quotes.content, quotes.day_timestamp FROM quotes WHERE quotes.guild_id={interaction.guild_id}").fetchone()
     print(quote_data)
-    if not quote_data or quote_data[1] != datetime.today().strftime("%Y-%m-%d"):
+    if not quote_data[0] or quote_data[1] != datetime.today().strftime("%Y-%m-%d"):
         #There is either not an quote for server or the quote needs to be updated
         quote = await choose_random_quote(interaction.guild)
+        if not quote:
+            await interaction.followup.send("There are no quotes to be found!")
+            return
         success = change_q_of_day(interaction.guild, quote)
         if not success:
             await interaction.followup.send("There was a database error", ephemeral=True)
@@ -113,6 +116,9 @@ async def quote_of_the_day(interaction: discord.Interaction):
 async def refresh_quote(interaction: discord.Interaction):
     await interaction.response.defer()
     quote = await choose_random_quote(interaction.guild)
+    if not quote:
+        await interaction.followup.send("There are no quotes to be found!")
+        return
     success = change_q_of_day(interaction.guild, quote)
     if not success:
         await interaction.followup.send("There was a database error", ephemeral=True)
@@ -153,7 +159,7 @@ async def remove_gif(interaction: discord.Interaction, gif:str):
         await interaction.followup.send("This gif does not exist in this server", ephemeral=True)
     else:
         # Delete the gif
-        query = f"DELETE FROM gifs.gif_link WHERE gifs.guild_id={interaction.guild_id} AND gifs.content={gif}"
+        query = f"DELETE FROM gifs WHERE gifs.guild_id={interaction.guild_id} AND gifs.content={gif}"
         db_cursor.execute(query)
         db_con.commit()
         await interaction.followup.send("The following gif has been removed: "+gif, ephemeral=True)
