@@ -305,7 +305,9 @@ async def download_video(url: str):
     #limit the duration
     if len(duration_data) > 2 and int(duration_data[2]) < 2:
         return None
-    video_name = f"{video_info["title"]}[{video_info["id"]}].mp3"
+    name = video_info["title"]
+    id = video_info["id"]
+    video_name = f"{name}-{id}.mp3"
     video_path = os.path.join(download_folder, video_name)
     #Check if video is not already downloaded
     if not os.path.exists(video_path):
