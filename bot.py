@@ -148,6 +148,20 @@ async def add_gif(interaction: discord.Interaction, gif:str, category:str=None):
     except sqlite3.IntegrityError:
         await interaction.followup.send("This gif has already been added")
 
+@client.tree.command(name="remove_gif", description="Removes a gif that was previously added")
+async def remove_gif(interaction: discord.Interaction, gif:str):
+    await interaction.response.defer()
+    query = f"SELECT gifs.gif_link FROM gifs WHERE gifs.guild_id={interaction.guild_id} AND gifs.content={gif}"
+    gif_exists = db_cursor.execute(query).fetchone()
+    if not gif_exists:
+        await interaction.followup.send("This gif does not exist in this server", ephemeral=True)
+    else:
+        # Delete the gif
+        query = f"DELETE FROM gifs.gif_link WHERE gifs.guild_id={interaction.guild_id} AND gifs.content={gif}"
+        db_cursor.execute(query)
+        await interaction.followup.send("The following gif has been removed: "+gif, ephemeral=True)
+
+
 @client.tree.command(name="send_gif", description="Sends a random gif that the bot has been allowed to send")
 async def send_gif(interaction: discord.Interaction, category:str=None):
     await interaction.response.defer()
