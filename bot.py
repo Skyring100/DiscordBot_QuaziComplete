@@ -15,23 +15,18 @@ db_con = sqlite3.connect("discord_bot.db")
 #setup cursor needed for queries
 db_cursor = db_con.cursor()
 
+
+db_tables = [("quotes","guild_id int, content varchar(500), day_timestamp varchar(10), PRIMARY KEY(guild_id, content)"),
+             ("gifs", "guild_id int, gif_link varchar(500), category varchar(50), PRIMARY KEY (guild_id, gif_link)"),
+             ("addable_roles", "guild_id int, role_id int, PRIMARY KEY (guild_id, role_id"),
+             ("welcome_messages", "guild_id int, message varchar(500) NOT NULL, welcome_channel_id int NOT NULL, PRIMARY KEY (guild_id)")]
+
 #create tables if they do not exist
-try:
-    db_cursor.execute("SELECT * FROM quotes")
-except sqlite3.OperationalError:
-    db_cursor.execute("CREATE TABLE quotes(guild_id int, content varchar(500), day_timestamp varchar(10), PRIMARY KEY(guild_id, content))")
-try:
-    db_cursor.execute("SELECT * FROM gifs")
-except sqlite3.OperationalError:
-    db_cursor.execute("CREATE TABLE gifs(guild_id int, gif_link varchar(500), category varchar(50), PRIMARY KEY (guild_id, gif_link))")
-try:
-    db_cursor.execute("SELECT * FROM addable_roles")
-except sqlite3.OperationalError:
-    db_cursor.execute("CREATE TABLE addable_roles(guild_id int, role_id int, PRIMARY KEY (guild_id, role_id))")
-try:
-    db_cursor.execute("SELECT * FROM welcome_messages")
-except sqlite3.OperationalError:
-    db_cursor.execute("CREATE TABLE welcome_messages(guild_id int, message varchar(500) NOT NULL, welcome_channel_id int NOT NULL, PRIMARY KEY (guild_id))")
+for table in db_tables:
+    try:
+        db_cursor.execute(f"SELECT * FROM {table[0]}")
+    except sqlite3.OperationalError:
+        db_cursor.execute(f"CREATE TABLE {table[0]}({table[1]})")
 
 db_con.commit()
 
@@ -102,6 +97,7 @@ async def set_welcome_message(interaction: discord.Interaction, message: str, we
 async def quote_of_the_day(interaction: discord.Interaction):
     await interaction.response.defer()
     quote_data = db_cursor.execute(f"SELECT quotes.content, quotes.day_timestamp FROM quotes WHERE quotes.guild_id={interaction.guild_id}").fetchone()
+    print(quote_data)
     if not quote_data or quote_data[1] != datetime.today().strftime("%Y-%m-%d"):
         #There is either not an quote for server or the quote needs to be updated
         quote = await choose_random_quote(interaction.guild)
@@ -159,6 +155,7 @@ async def remove_gif(interaction: discord.Interaction, gif:str):
         # Delete the gif
         query = f"DELETE FROM gifs.gif_link WHERE gifs.guild_id={interaction.guild_id} AND gifs.content={gif}"
         db_cursor.execute(query)
+        db_con.commit()
         await interaction.followup.send("The following gif has been removed: "+gif, ephemeral=True)
 
 
