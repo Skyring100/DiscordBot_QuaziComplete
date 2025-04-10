@@ -154,6 +154,7 @@ async def add_gif(interaction: discord.Interaction, gif:str, category:str=None):
 async def remove_gif(interaction: discord.Interaction, gif:str):
     await interaction.response.defer()
     query = f"SELECT gifs.gif_link FROM gifs WHERE gifs.guild_id={interaction.guild_id} AND gifs.content={gif}"
+    print(query)
     gif_exists = db_cursor.execute(query).fetchone()
     if not gif_exists:
         await interaction.followup.send("This gif does not exist in this server", ephemeral=True)
