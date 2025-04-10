@@ -153,14 +153,14 @@ async def add_gif(interaction: discord.Interaction, gif:str, category:str=None):
 @client.tree.command(name="remove_gif", description="Removes a gif that was previously added")
 async def remove_gif(interaction: discord.Interaction, gif:str):
     await interaction.response.defer()
-    query = f"SELECT gifs.gif_link FROM gifs WHERE gifs.guild_id={interaction.guild_id} AND gifs.content=?"
+    query = f"SELECT gifs.gif_link FROM gifs WHERE gifs.guild_id={interaction.guild_id} AND gifs.gif_link=?"
     print(query)
     gif_exists = db_cursor.execute(query, [gif]).fetchone()
     if not gif_exists:
         await interaction.followup.send("This gif does not exist in this server", ephemeral=True)
     else:
         # Delete the gif
-        query = f"DELETE FROM gifs WHERE gifs.guild_id={interaction.guild_id} AND gifs.content=?"
+        query = f"DELETE FROM gifs WHERE gifs.guild_id={interaction.guild_id} AND gifs.gif_link=?"
         db_cursor.execute(query, [gif])
         db_con.commit()
         await interaction.followup.send("The following gif has been removed: "+gif, ephemeral=True)
