@@ -292,7 +292,6 @@ async def download_video(url: str):
     ydl_opts = {
         'format': 'bestaudio/best',
         'noplaylist': True,
-        'restrictfilenames': True,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
