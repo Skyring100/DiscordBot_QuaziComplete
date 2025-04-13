@@ -291,11 +291,13 @@ async def change_led(interaction: discord.Interaction, is_on: bool):
 async def download_video(url: str):
     ydl_opts = {
         'format': 'bestaudio/best',
+        'noplaylist': True,
+        'restrictfilenames': True,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             'preferredquality': '192'
-        }], 'noplaylist': True
+        }]
     }
     downloader = yt_dlp.YoutubeDL(ydl_opts)
     video_info = downloader.extract_info(url, download=False)
@@ -312,7 +314,10 @@ async def download_video(url: str):
     #Check if video is not already downloaded
     if not os.path.exists(video_path):
         downloader.download([url])
-        shutil.move(video_name, download_folder)
+        try:
+            shutil.move(video_name, download_folder)
+        except FileNotFoundError:
+            print(f"Attempted to find {video_name} but was not found")
     return video_path
 
 def clear_audio_folder():
