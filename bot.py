@@ -262,7 +262,7 @@ async def leave_vc(interaction: discord.Interaction):
         await interaction.response.send_message("Bot is not in a voice channel", ephemeral=True)
 
 @client.tree.command(name="youtube", description="Play YouTube audio")
-async def youtube(interaction: discord.Interaction, url: str):
+async def youtube(interaction: discord.Interaction, url:str, keep_file:bool=False):
     voice = interaction.guild.voice_client
     if not voice:
         return await interaction.response.send_message("Bot needs to be in a voice channel for this", ephemeral=True)
@@ -288,14 +288,16 @@ async def change_led(interaction: discord.Interaction, is_on: bool):
 
 #helper functions
 
-async def download_video(url: str):
+async def download_video(url: str, keep_file=False):
     ydl_opts = {
         'format': 'bestaudio/best',
+        'restrictfilenames': True,
+        'noplaylist': True,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             'preferredquality': '192'
-        }], 'noplaylist': True
+        }]
     }
     downloader = yt_dlp.YoutubeDL(ydl_opts)
     video_info = downloader.extract_info(url, download=False)
@@ -309,10 +311,12 @@ async def download_video(url: str):
     id = video_info["id"]
     video_name = f"{name} [{id}].mp3"
     video_path = os.path.join(download_folder, video_name)
-    #Check if video is not already downloaded
-    if not os.path.exists(video_path):
-        downloader.download([url])
-        shutil.move(video_name, download_folder)
+    downloader.download([url])
+    if keep_file and not os.path.exists(video_path):
+        try:
+            shutil.move(video_name, download_folder)
+        except FileNotFoundError:
+            print(f"Attempted to find {video_name} but was not found")
     return video_path
 
 def clear_audio_folder():
