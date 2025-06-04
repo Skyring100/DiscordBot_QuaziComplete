@@ -299,7 +299,7 @@ async def download_video(url: str):
             'preferredcodec': 'mp3',
             'preferredquality': '192'
         }],
-        'paths': os.path.join(os.getcwd(), download_folder)
+        'output': os.path.join(os.path.join(os.getcwd(), download_folder), "%(title)s_%(id)s.%(ext)s")
     }
     downloader = yt_dlp.YoutubeDL(ydl_opts)
     video_info = downloader.extract_info(url, download=False)
