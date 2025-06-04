@@ -298,7 +298,8 @@ async def download_video(url: str):
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             'preferredquality': '192'
-        }]
+        }],
+        'outtmpl': os.path.join(os.getcwd(), download_folder)
     }
     downloader = yt_dlp.YoutubeDL(ydl_opts)
     video_info = downloader.extract_info(url, download=False)
@@ -308,17 +309,10 @@ async def download_video(url: str):
     #limit the duration
     if len(duration_data) > 2 and int(duration_data[2]) < 2:
         return None
-    name = video_info["title"].replace(r"[\\/:\'\"*?<>|]+","")
+    name = video_info["title"]
     id = video_info["id"]
-    video_name = f"{name}_{id}.mp3"
+    video_name = f"{name} [{id}].mp3"
     video_path = os.path.join(download_folder, video_name)
-    #Check if video is not already downloaded
-    if not os.path.exists(video_path):
-        downloader.download([url])
-        try:
-            shutil.move(video_name, download_folder)
-        except FileNotFoundError:
-            print(f"Attempted to find {video_name} but was not found")
     return video_path
 
 def clear_audio_folder():
