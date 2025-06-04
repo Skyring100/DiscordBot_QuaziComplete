@@ -312,8 +312,8 @@ async def download_video(url: str):
     name = video_info["title"]
     id = video_info["id"]
     video_name = f"{name} [{id}].mp3"
-    video_path = os.path.join(download_folder, video_name)
-    return video_path
+    #video_path = os.path.join(download_folder, video_name)
+    return video_name
 
 def clear_audio_folder():
     for file in os.listdir(download_folder):
