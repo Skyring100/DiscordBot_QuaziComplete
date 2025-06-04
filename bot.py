@@ -10,6 +10,8 @@ from datetime import datetime
 import traceback
 import sqlite3
 from types import NoneType
+import re
+
 #connect to the bot's database
 db_con = sqlite3.connect("discord_bot.db")
 #setup cursor needed for queries
@@ -308,7 +310,7 @@ async def download_video(url: str):
         return None
     name = video_info["title"]
     id = video_info["id"]
-    video_name = f"{name} [{id}].mp3"
+    video_name = f"{re.sub(r"(?u)[^-\w.]", "", name)}_{id}.mp3"
     video_path = os.path.join(download_folder, video_name)
     #Check if video is not already downloaded
     if not os.path.exists(video_path):
