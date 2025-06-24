@@ -425,7 +425,7 @@ def get_battle_stat_profile(user_id: int, guild_id: int, is_bot_self: bool = Fal
     stats = db_cursor.execute(f"SELECT * FROM battle_stats WHERE user_id={user_id} AND guild_id={guild_id}")
     # Check if stats have not been initialized
     profile = stats.fetchone()
-    if not profile[0]:
+    if profile is None:
         defaut_battle_stats = {"health": 20, "attack":2, "defence": 2}
         bot_boss_modifier = 2
 
