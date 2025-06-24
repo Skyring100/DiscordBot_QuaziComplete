@@ -21,7 +21,8 @@ db_cursor = db_con.cursor()
 db_tables = [("quotes","guild_id int, content varchar(500), day_timestamp varchar(10), PRIMARY KEY(guild_id, content)"),
              ("gifs", "guild_id int, gif_link varchar(500), category varchar(50), PRIMARY KEY (guild_id, gif_link)"),
              ("addable_roles", "guild_id int, role_id int, PRIMARY KEY (guild_id, role_id"),
-             ("welcome_messages", "guild_id int, message varchar(500) NOT NULL, welcome_channel_id int NOT NULL, PRIMARY KEY (guild_id)")]
+             ("welcome_messages", "guild_id int, message varchar(500) NOT NULL, welcome_channel_id int NOT NULL, PRIMARY KEY (guild_id)"),
+             ("user_battle_stats", "user_id int, guild_id, int max_health int, current_health int, attack int, PRIMARY KEY (user_id, guild_id)")]
 
 #create tables if they do not exist
 for table in db_tables:
@@ -284,6 +285,32 @@ async def change_led(interaction: discord.Interaction, is_on: bool):
     else:
         await interaction.response.send_message("Bot currently does not have access to pin I/O", ephemeral=True)
 
+#battle commands
+
+@client.tree.command(name="battle_bot", description="Attack this Discord bot!")
+async def battle_bot(interaction: discord.Interaction):
+    print(f"{interaction.user.name} is battling {interaction.client.user.name}")
+    bot_stats = get_battle_stat_profile(interaction.client.user.id, interaction.guild_id, True)
+    user_stats = get_battle_stat_profile(interaction.user.id, interaction.guild_id)
+    # Check if user has no health left
+    if user_stats[3] == 0:
+        await interaction.response.send_message("You dont have any health left!")
+    else:
+        battle_message = attack_entity(user_stats, bot_stats).replace("attacker", interaction.user.name).replace("defender", interaction.client.user.name) + "\n"
+        if bot_stats[3] != 0:
+            battle_message += attack_entity(bot_stats, user_stats).replace("attacker", interaction.client.user.name).replace("defender", interaction.user.name)
+            if user_stats[3] == 0:
+                battle_message += "\n" + f"{interaction.user.name} was defeated!"
+        else:
+            battle_message += f"{interaction.client.user.name} was defeated!"
+        # Update stats for user and bot in database
+        db_cursor.execute(f"UPDATE battle_stats SET current_health={bot_stats[3]} WHERE user_id={interaction.client.user.id} AND guild_id={interaction.guild_id}")
+        db_cursor.execute(f"UPDATE battle_stats SET current_health={user_stats[3]} WHERE user_id={interaction.user.id} AND guild_id={interaction.guild_id}")
+        await interaction.response.send_message(battle_message)
+
+        
+
+
 #helper functions
 
 async def download_video(url: str):
@@ -373,5 +400,33 @@ def str_query_results(results: sqlite3.Cursor):
         result_str += str(str(r[0])+", ")
     #remove the last ", " from string
     return result_str[:-2]  
+
+def get_battle_stat_profile(user_id: int, guild_id: int, is_bot_self: bool = False):
+    stats = db_cursor.execute(f"SELECT * FROM bot_battle_stats WHERE user_id={user_id} AND guild_id={guild_id}")
+    # Check if stats have not been initialized
+    profile = stats.fetchone()
+    if not profile[0]:
+        defaut_battle_stats = {"health": 20, "attack":2}
+        bot_boss_modifier = 2
+
+        health = defaut_battle_stats['health']
+        attack = defaut_battle_stats['attack']
+        if is_bot_self:
+            health *= bot_boss_modifier
+            attack *= bot_boss_modifier
+        values_string = f"{user_id}, {guild_id}, {health}, {health}, {attack}"
+        db_cursor.execute(f"INSERT INTO bot_battle_stats(user_id, guild_id, max_health, current_health, attack) VALUES ({values_string})")
+        return (user_id, guild_id, health, health, attack)
+    return profile
+
+# Returns battle text
+def attack_entity(attacker_stats: tuple, defender_stats: tuple):
+    critical_hit = (True if (random.random() < 0.25) else False)
+    damage = attacker_stats[4] * (2 if critical_hit else 1)
+    defender_stats[3] -= damage
+    if defender_stats[3] < 0:
+        defender_stats[3] = 0
+    return f"attacker did {damage} to defender!" + ("It was a critical hit!" if critical_hit else "")
+
 
 client.run(TOKEN)
