@@ -22,7 +22,7 @@ db_tables = [("quotes","guild_id int, content varchar(500), day_timestamp varcha
              ("gifs", "guild_id int, gif_link varchar(500), category varchar(50), PRIMARY KEY (guild_id, gif_link)"),
              ("addable_roles", "guild_id int, role_id int, PRIMARY KEY (guild_id, role_id"),
              ("welcome_messages", "guild_id int, message varchar(500) NOT NULL, welcome_channel_id int NOT NULL, PRIMARY KEY (guild_id)"),
-             ("user_battle_stats", "user_id int, guild_id, int max_health int, current_health int, attack int, defence int, level int, PRIMARY KEY (user_id, guild_id)")]
+             ("battle_stats", "user_id int, guild_id, int max_health int, current_health int, attack int, defence int, level int, PRIMARY KEY (user_id, guild_id)")]
 
 #create tables if they do not exist
 for table in db_tables:
@@ -422,7 +422,7 @@ def str_query_results(results: sqlite3.Cursor):
     return result_str[:-2]  
 
 def get_battle_stat_profile(user_id: int, guild_id: int, is_bot_self: bool = False):
-    stats = db_cursor.execute(f"SELECT * FROM bot_battle_stats WHERE user_id={user_id} AND guild_id={guild_id}")
+    stats = db_cursor.execute(f"SELECT * FROM battle_stats WHERE user_id={user_id} AND guild_id={guild_id}")
     # Check if stats have not been initialized
     profile = stats.fetchone()
     if not profile[0]:
@@ -436,7 +436,7 @@ def get_battle_stat_profile(user_id: int, guild_id: int, is_bot_self: bool = Fal
             health *= bot_boss_modifier
             attack *= bot_boss_modifier
         values_string = f"{user_id}, {guild_id}, {health}, {health}, {attack}, {defence}, 1"
-        db_cursor.execute(f"INSERT INTO bot_battle_stats(user_id, guild_id, max_health, current_health, attack) VALUES ({values_string})")
+        db_cursor.execute(f"INSERT INTO battle_stats(user_id, guild_id, max_health, current_health, attack) VALUES ({values_string})")
         return (user_id, guild_id, health, health, attack, defence, 1)
     return profile
 
