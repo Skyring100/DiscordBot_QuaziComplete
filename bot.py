@@ -25,9 +25,8 @@ db_tables = [("quotes","guild_id int, content varchar(500), day_timestamp varcha
 
 #create tables if they do not exist
 for table in db_tables:
-    try:
-        db_cursor.execute(f"SELECT * FROM {table[0]}")
-    except sqlite3.OperationalError:
+    db_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table[0]}';")
+    if db_cursor.fetchone()[0] != 1:
         db_cursor.execute(f"CREATE TABLE {table[0]}({table[1]})")
 
 db_con.commit()
@@ -63,9 +62,7 @@ async def on_member_join(member: discord.Member):
     if welcome_data:
         await member.guild.get_channel(welcome_data[1]).send(f"Hello {member.mention},\n{welcome_data[0]}")
 
-
-
-#testing commands
+#basic commands
 
 @client.tree.command(name="hello_world", description="Say hello to my little friend!")
 async def hello_world(interaction: discord.Interaction):
@@ -91,7 +88,6 @@ async def set_welcome_message(interaction: discord.Interaction, message: str, we
         db_cursor.execute(f"INSERT INTO welcome_messages(guild_id, message, welcome_channel_id) VALUES({interaction.guild_id}, ?, {welcome_channel.id})", [message])
     db_con.commit()
     await interaction.followup.send(f"A new welcome message has be set for the server:\n{message}")
-
 
 #quote of the day commands
 
