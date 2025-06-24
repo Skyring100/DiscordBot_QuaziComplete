@@ -323,7 +323,13 @@ async def defend_from_bot(interaction: discord.Interaction):
         battle_message = f"{interaction.user.name} is defending and healed {heal_amount} points!\n" + attack_entity(bot_stats, user_stats, interaction.client.user.name, interaction.user.name)
         await interaction.response.send_message(battle_message)
 
-
+@client.tree.command(name="check_stats", description="Check both your own stats and the bot's")
+async def check_stats(interaction: discord.Interaction):
+    bot_stats = get_battle_stat_profile(interaction.client.user.id, interaction.guild_id, True)
+    user_stats = get_battle_stat_profile(interaction.user.id, interaction.guild_id)
+    user_display = f"{interaction.user.name}\nMax Health: {user_stats[2]} Current Health: {user_stats[3]} Attack: {user_stats[4]} Defence: {user_stats[5]} Level: {user_stats[6]}"
+    bot_display = f"{interaction.client.user.name} (The Bot Boss)\nMax Health: {bot_stats[2]} Current Health: {bot_stats[3]} Attack: {bot_stats[4]} Defence: {bot_stats[5]} Level: {bot_stats[6]}"
+    await interaction.response.send_message(user_display+"\n\n"+bot_display)
 
 #helper functions
 
