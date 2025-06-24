@@ -27,7 +27,7 @@ db_tables = [("quotes","guild_id int, content varchar(500), day_timestamp varcha
 #create tables if they do not exist
 for table in db_tables:
     db_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table[0]}';")
-    if db_cursor.fetchone()[0] != 1:
+    if db_cursor.fetchone() is None:
         db_cursor.execute(f"CREATE TABLE {table[0]}({table[1]})")
 
 db_con.commit()
