@@ -22,7 +22,7 @@ db_tables = [("quotes","guild_id int, content varchar(500), day_timestamp varcha
              ("gifs", "guild_id int, gif_link varchar(500), category varchar(50), PRIMARY KEY (guild_id, gif_link)"),
              ("addable_roles", "guild_id int, role_id int, PRIMARY KEY (guild_id, role_id"),
              ("welcome_messages", "guild_id int, message varchar(500) NOT NULL, welcome_channel_id int NOT NULL, PRIMARY KEY (guild_id)"),
-             ("battle_stats", "user_id int, guild_id, int max_health int, current_health int, attack int, defence int, level int, PRIMARY KEY (user_id, guild_id)")]
+             ("battle_stats", "user_id int, guild_id int, max_health int, current_health int, attack int, defence int, level int, PRIMARY KEY (user_id, guild_id)")]
 
 #create tables if they do not exist
 for table in db_tables:
