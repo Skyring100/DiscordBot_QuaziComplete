@@ -438,11 +438,11 @@ def get_battle_stat_profile(user_id: int, guild_id: int, is_bot_self: bool = Fal
             defence = round(defence * bot_boss_modifier)
         values_string = f"{user_id}, {guild_id}, {health}, {health}, {attack}, {defence}, 1"
         db_cursor.execute(f"INSERT INTO battle_stats(user_id, guild_id, max_health, current_health, attack, defence, level) VALUES ({values_string})")
-        return (user_id, guild_id, health, health, attack, defence, 1)
-    return profile
+        return [user_id, guild_id, health, health, attack, defence, 1]
+    return list(profile)
 
 # Returns battle text
-def attack_entity(attacker_stats: tuple, defender_stats: tuple, attacker_name: str, defender_name: str):
+def attack_entity(attacker_stats, defender_stats, attacker_name: str, defender_name: str):
     critical_hit = (True if (random.random() < 0.25) else False)
     # Add critical hit multipler if applicable and use defence stat from defender
     damage = attacker_stats[4] * (2 if critical_hit else 1) - defender_stats[5]
