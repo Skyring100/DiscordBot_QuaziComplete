@@ -320,6 +320,7 @@ async def defend_from_bot(interaction: discord.Interaction):
         # Heal randomly froma minimum of 2 point to a maximum of half their max health
         heal_amount = random.randint(2, round(user_stats[2]/2))
         user_stats[3] += heal_amount
+        user_stats[3] = min(user_stats[3], user_stats[2])
         battle_message = f"{interaction.user.name} is defending and healed {heal_amount} points!\n" + attack_entity(bot_stats, user_stats, interaction.client.user.name, interaction.user.name)
         battle_message += f"\n{interaction.user.name} Health: {user_stats[3]}/{user_stats[2]} | {interaction.client.user.name} Health: {bot_stats[3]}/{bot_stats[2]}"
         db_con.commit()
