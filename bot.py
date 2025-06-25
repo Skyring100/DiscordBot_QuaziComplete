@@ -289,7 +289,6 @@ async def change_led(interaction: discord.Interaction, is_on: bool):
 
 @client.tree.command(name="battle_bot", description="Attack this Discord bot!")
 async def battle_bot(interaction: discord.Interaction):
-    print(f"{interaction.user.name} is battling {interaction.client.user.name}")
     bot_stats = get_battle_stat_profile(interaction.client.user.id, interaction.guild_id, True)
     user_stats = get_battle_stat_profile(interaction.user.id, interaction.guild_id)
     # Check if user has no health left
@@ -303,15 +302,15 @@ async def battle_bot(interaction: discord.Interaction):
                 battle_message += f"\n{interaction.user.name} was defeated!"
         else:
             battle_message += f"{interaction.client.user.name} was defeated!"
-        battle_message += f"\n{interaction.user.name} Health: {user_stats[3]}/{user_stats[4]} | {interaction.client.user.name} Health: {bot_stats[3]}/{bot_stats[4]}"
+        battle_message += f"\n{interaction.user.name} Health: {user_stats[3]}/{user_stats[2]} | {interaction.client.user.name} Health: {bot_stats[3]}/{bot_stats[2]}"
         # Update stats for user and bot in database
         db_cursor.execute(f"UPDATE battle_stats SET current_health={bot_stats[3]} WHERE user_id={interaction.client.user.id} AND guild_id={interaction.guild_id}")
         db_cursor.execute(f"UPDATE battle_stats SET current_health={user_stats[3]} WHERE user_id={interaction.user.id} AND guild_id={interaction.guild_id}")
+        db_con.commit()
         await interaction.response.send_message(battle_message)
 
 @client.tree.command(name="defend_from_bot", description="Defend from the bot's attack and heal in the process!")
 async def defend_from_bot(interaction: discord.Interaction):
-    print(f"{interaction.user.name} is defending")
     bot_stats = get_battle_stat_profile(interaction.client.user.id, interaction.guild_id, True)
     user_stats = get_battle_stat_profile(interaction.user.id, interaction.guild_id)
     # Check if user has no health left
@@ -322,7 +321,8 @@ async def defend_from_bot(interaction: discord.Interaction):
         heal_amount = random.randint(2, round(user_stats[2]/2))
         user_stats[3] += heal_amount
         battle_message = f"{interaction.user.name} is defending and healed {heal_amount} points!\n" + attack_entity(bot_stats, user_stats, interaction.client.user.name, interaction.user.name)
-        battle_message += f"\n{interaction.user.name} Health: {user_stats[3]}/{user_stats[4]} | {interaction.client.user.name} Health: {bot_stats[3]}/{bot_stats[4]}"
+        battle_message += f"\n{interaction.user.name} Health: {user_stats[3]}/{user_stats[2]} | {interaction.client.user.name} Health: {bot_stats[3]}/{bot_stats[2]}"
+        db_con.commit()
         await interaction.response.send_message(battle_message)
 
 @client.tree.command(name="check_stats", description="Check both your own stats and the bot's")
@@ -453,7 +453,7 @@ def attack_entity(attacker_stats, defender_stats, attacker_name: str, defender_n
     defender_stats[3] -= damage
     if defender_stats[3] < 0:
         defender_stats[3] = 0
-    return f"{attacker_name} did {damage} damage to {defender_name}!" + ("It was a critical hit!" if critical_hit else "")
+    return f"{attacker_name} did {damage} damage to {defender_name}!" + (" It was a critical hit!" if critical_hit else "")
 
 
 client.run(TOKEN)
