@@ -426,15 +426,16 @@ def get_battle_stat_profile(user_id: int, guild_id: int, is_bot_self: bool = Fal
     # Check if stats have not been initialized
     profile = stats.fetchone()
     if profile is None:
-        defaut_battle_stats = {"health": 20, "attack":2, "defence": 2}
-        bot_boss_modifier = 2
+        defaut_battle_stats = {"health": 20, "attack":2, "defence": 1}
+        bot_boss_modifier = 1.25
 
         health = defaut_battle_stats['health']
         attack = defaut_battle_stats['attack']
         defence = defaut_battle_stats['defence']
         if is_bot_self:
-            health *= bot_boss_modifier
-            attack *= bot_boss_modifier
+            health = round(health * bot_boss_modifier)
+            attack = round(attack * bot_boss_modifier)
+            defence = round(defence * bot_boss_modifier)
         values_string = f"{user_id}, {guild_id}, {health}, {health}, {attack}, {defence}, 1"
         db_cursor.execute(f"INSERT INTO battle_stats(user_id, guild_id, max_health, current_health, attack, defence, level) VALUES ({values_string})")
         return (user_id, guild_id, health, health, attack, defence, 1)
