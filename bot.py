@@ -446,15 +446,12 @@ def get_battle_stat_profile(user_id: int, guild_id: int, is_bot_self: bool = Fal
 
 # Returns battle text
 def attack_entity(attacker_stats, defender_stats, attacker_name: str, defender_name: str):
-    critical_hit = (True if (random.random() < 0.25) else False)
-    # Add critical hit multipler if applicable and use defence stat from defender
-    damage = attacker_stats[4] * (2 if critical_hit else 1) - defender_stats[5]
+    damage = random.randint(attacker_stats[4], attacker_stats[4]*2) - random.randint(defender_stats[5], defender_stats[5]*2) 
     # Ensure no negative damage
     damage = 0 if damage < 0 else damage
     defender_stats[3] -= damage
     if defender_stats[3] < 0:
         defender_stats[3] = 0
-    return f"{attacker_name} did {damage} damage to {defender_name}!" + (" It was a critical hit!" if critical_hit else "")
-
+    return f"{attacker_name} did {damage} damage to {defender_name}!"
 
 client.run(TOKEN)
