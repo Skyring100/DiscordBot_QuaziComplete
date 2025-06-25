@@ -436,7 +436,7 @@ def get_battle_stat_profile(user_id: int, guild_id: int, is_bot_self: bool = Fal
             health *= bot_boss_modifier
             attack *= bot_boss_modifier
         values_string = f"{user_id}, {guild_id}, {health}, {health}, {attack}, {defence}, 1"
-        db_cursor.execute(f"INSERT INTO battle_stats(user_id, guild_id, max_health, current_health, attack) VALUES ({values_string})")
+        db_cursor.execute(f"INSERT INTO battle_stats(user_id, guild_id, max_health, current_health, attack, defence, level) VALUES ({values_string})")
         return (user_id, guild_id, health, health, attack, defence, 1)
     return profile
 
